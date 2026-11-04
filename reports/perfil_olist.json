@@ -1,0 +1,21 @@
+{
+  "total_avaliacoes": 99224,
+  "com_comentario": 40950,
+  "com_titulo": 11566,
+  "titulo_e_comentario": 9829,
+  "somente_titulo": 1737,
+  "somente_comentario": 31121,
+  "sem_texto": 56537,
+  "documentos_aproveitaveis": 42687,
+  "review_id_repetidos": 814,
+  "order_id_repetidos": 551,
+  "notas": {
+    "1": 11424,
+    "2": 3151,
+    "3": 8179,
+    "4": 19142,
+    "5": 57328
+  },
+  "mediana_caracteres_texto": 68.0,
+  "fonte": "olist_order_reviews_dataset.csv"
+}
