@@ -3,10 +3,13 @@
 
 **FIAP POSTECH | Data & AI Scientist | Tech Challenge - Fase 4**
 
-**Versao:** 0.1.0 - Base de Conhecimento e Recuperacao Semantica
+**Versao:** 0.2.0 - RAG basico integrado
 
-**Status:** etapas de preparacao, embeddings e indexacao concluidas.
-Pipeline RAG com geracao de respostas ainda em desenvolvimento.
+**Status:** preparacao, embeddings, indexacao, recuperador reutilizavel,
+montagem de contexto e geracao com Qwen2.5-1.5B-Instruct local
+implementados e cobertos por testes automatizados com dependencias
+falsas. Validacao end-to-end contra o indice completo e os casos de
+desenvolvimento do time ainda pendente nesta maquina.
 
 ## 1. Sobre o projeto
 
@@ -105,22 +108,20 @@ flowchart TD
     C --> D["multilingual-e5-small"]
     D --> E[("ChromaDB: 42.687 vetores")]
 
-    Q["Pergunta do usuario"] --> F["Embedding query"]
+    Q["Pergunta do usuario"] --> F["Recuperador: embedding query"]
     F --> E
-    E --> G["Recuperacao por similaridade"]
-    G --> H["Experimentos de reformulacao e reranking"]
-
-    H -.-> I["Contexto e geracao com LLM"]
-    I -.-> J["Resposta fundamentada e evidencias"]
-    J -.-> K["Interface de usuario"]
+    E --> G["Montagem de contexto: dedup + orcamento"]
+    G --> I["Qwen2.5-1.5B-Instruct local"]
+    I --> J["Parse + validacao de citacoes (Pydantic)"]
+    J --> K["CLI: resposta ou recusa fundamentada"]
 
     classDef pendente stroke-dasharray:5 5;
-    class I,J,K pendente;
+    class K pendente;
 ```
 
-**Legenda:** as setas continuas representam o fluxo implementado
-ou experimentado. As setas tracejadas indicam componentes
-planejados, ainda nao validados ponta a ponta.
+**Legenda:** as setas continuas representam o fluxo implementado.
+A interface de usuario ainda e uma CLI minima (`src/app.py`); uma
+interface grafica permanece pendente.
 
 A descricao detalhada da arquitetura encontra-se em
 [docs/arquitetura.md](docs/arquitetura.md).
@@ -139,8 +140,9 @@ A descricao detalhada da arquitetura encontra-se em
 | Reranker experimental | cross-encoder/mmarco-mMiniLMv2-L12-H384-v1 |
 | Testes automatizados | unittest |
 | Versionamento | Git e GitHub |
-| Geracao de respostas | Pendente |
-| Interface | Pendente |
+| Geracao de respostas | Qwen/Qwen2.5-1.5B-Instruct (local, via transformers) |
+| Validacao de saida | Pydantic |
+| Interface | CLI minima (`src/app.py`) |
 
 A arquitetura foi desenvolvida inicialmente para execucao local.
 
@@ -184,15 +186,24 @@ A arquitetura foi desenvolvida inicialmente para execucao local.
 
 ### Etapa 4 - Pipeline RAG e respostas fundamentadas
 
-**Status: em desenvolvimento.**
+**Status: versao inicial implementada; validacao end-to-end pendente.**
 
-Atividades previstas:
-- Montagem do contexto recuperado.
-- Integracao de um modelo de linguagem.
-- Respostas com citacoes aos documentos originais.
-- Validacao de pertinencia e suficiencia das evidencias.
-- Tratamento de perguntas fora do escopo.
-- Tratamento de perguntas sem evidencias suficientes.
+- Recuperador reutilizavel (`src/retrieval/recuperador.py`).
+- Montagem de contexto com deduplicacao e orcamento
+  (`src/retrieval/contexto.py`).
+- Geracao com Qwen2.5-1.5B-Instruct local (`src/generation/modelo.py`).
+- Prompt, parse e validacao de citacoes com Pydantic
+  (`src/generation/resposta.py`).
+- Orquestracao e CLI minima (`src/app.py`).
+- Execucao em lote de casos de desenvolvimento
+  (`src/evaluation/executar_casos.py`).
+- Tratamento de perguntas fora do escopo e sem evidencias suficientes,
+  com status `erro_operacional` reservado para falhas operacionais
+  (nunca confundido com ausencia de evidencias).
+
+Pendente: validar contra o indice completo e os 18 casos de
+desenvolvimento reais do benchmark da frente de dados (P1), que nao
+foram incluidos neste repositorio (ver `data/eval/README.md`).
 
 ### Etapa 5 - Avaliacao, interface e entrega
 
@@ -248,7 +259,8 @@ tech-challenge-fase4/
 ├── data/
 │   ├── raw/                  # Dados originais (ignorados pelo Git)
 │   ├── processed/            # Dados preparados e JSONL (ignorados)
-│   └── vectorstore/          # Bancos ChromaDB (ignorados)
+│   ├── vectorstore/          # Bancos ChromaDB (ignorados)
+│   └── eval/                 # Casos de exemplo para a CLI de avaliacao
 ├── docs/
 │   ├── arquitetura.md
 │   ├── decisoes.md
@@ -266,21 +278,23 @@ tech-challenge-fase4/
 │   ├── auditar_recuperacao.py
 │   └── testar_reranker.py
 ├── src/
+│   ├── config.py
+│   ├── app.py               # Orquestracao e CLI
 │   ├── preprocessing/
 │   ├── retrieval/
+│   │   ├── tipos.py
+│   │   ├── recuperador.py
+│   │   └── contexto.py
 │   ├── generation/
+│   │   ├── modelo.py
+│   │   └── resposta.py
 │   └── evaluation/
+│       └── executar_casos.py
 ├── tests/
 ├── requirements.txt
 ├── .gitignore
 └── README.md
 ```
-
-Os diretorios `retrieval`, `generation` e `evaluation`
-tambem serao utilizados na implementacao do pipeline RAG.
-
-A presenca de uma pasta nao significa que suas funcionalidades
-ja estejam completas ou validadas.
 
 ## 9. Como executar o projeto
 
@@ -359,8 +373,25 @@ A indexacao completa utiliza a colecao:
 
 O segundo script pode baixar um modelo adicional de reranking.
 
-Esses comandos executam experimentos. A interface conversacional
-e a geracao de respostas ainda nao estao disponiveis nesta versao.
+### 9.8 Fazer uma pergunta pela CLI
+
+```powershell
+.\.venv\Scripts\python.exe -m src.app --pergunta "Quais relatos descrevem atraso na entrega?"
+```
+
+Na primeira execucao, o Qwen2.5-1.5B-Instruct e baixado localmente
+(nao requer chave de API nem GPU). O resultado e impresso em JSON, no
+contrato de saida publico descrito em `docs/arquitetura.md`.
+
+### 9.9 Executar os casos de exemplo em lote
+
+```powershell
+.\.venv\Scripts\python.exe -m src.evaluation.executar_casos --casos data/eval/casos_exemplo.jsonl --saida reports/predicoes_dev.jsonl
+```
+
+`data/eval/casos_exemplo.jsonl` e um conjunto ilustrativo de 6
+perguntas, nao o benchmark oficial da frente de dados (ver
+`data/eval/README.md`).
 
 ## 10. Documentacao
 
@@ -383,18 +414,28 @@ incluem justificativa, alternativas, limitacoes e validacoes.
 - A recuperacao pode confundir elogios com reclamacoes.
 - Scores de similaridade nao representam probabilidades de acerto.
 - Top-K nao permite inferir frequencia global de problemas.
-- Ainda nao existe geracao de respostas com LLM validada.
-- Ainda nao foi implementado o mecanismo completo de abstencao.
+- A verificacao de citacoes confirma que o trecho existe literalmente
+  na fonte, mas nao comprova que a afirmacao decorre semanticamente
+  dele; isso ainda exige revisao manual.
+- O Qwen2.5-1.5B-Instruct local ainda nao teve tempo e qualidade
+  medidos com os casos de desenvolvimento reais.
+- O benchmark oficial de 30 casos da frente de dados (P1) nao foi
+  incluido neste repositorio; os testes usam um conjunto ilustrativo
+  de 6 perguntas (`data/eval/casos_exemplo.jsonl`).
+- A classificacao "fora do escopo" depende do proprio LLM seguir o
+  prompt-base; ainda sem validacao sistematica.
 
 ## 12. Proximos passos
 
 ### Prioridade 1 - Cumprir os requisitos obrigatorios
 
-1. Construir o recuperador e o contexto utilizados pelo RAG.
-2. Integrar um modelo de linguagem.
-3. Implementar respostas fundamentadas com fontes rastreaveis.
-4. Tratar perguntas fora do escopo e evidencias insuficientes.
-5. Testar o pipeline completo.
+1. ~~Construir o recuperador e o contexto utilizados pelo RAG.~~ Feito.
+2. ~~Integrar um modelo de linguagem.~~ Feito (Qwen2.5-1.5B local).
+3. ~~Implementar respostas fundamentadas com fontes rastreaveis.~~ Feito.
+4. ~~Tratar perguntas fora do escopo e evidencias insuficientes.~~ Feito,
+   pendente de validacao sistematica.
+5. Testar o pipeline completo contra o indice real e o benchmark
+   oficial da frente de dados.
 
 ### Prioridade 2 - Validar a qualidade
 
@@ -444,6 +485,10 @@ O repositorio devera apresentar codigo funcional,
 documentacao das escolhas, exemplos de uso,
 instrucoes de reproducao e demonstracao em video.
 
-**Situacao desta versao:** checkpoint compartilhavel das
-etapas de preparacao, indexacao e recuperacao semantica.
-A solucao RAG completa ainda esta em desenvolvimento.
+**Situacao desta versao:** checkpoint compartilhavel das etapas de
+preparacao, indexacao e recuperacao semantica, mais um RAG basico
+integrado (recuperacao, contexto, geracao com Qwen2.5-1.5B-Instruct
+local e CLI minima). Falta validar o pipeline contra o indice completo
+e o benchmark oficial de 30 casos da frente de dados (P1), comparar
+estrategias de recuperacao (D010-D012) e preparar a entrega final
+(interface, video e documentacao de qualidade).
