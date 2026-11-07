@@ -18,3 +18,8 @@ data/vectorstore/*
 # Artefatos locais
 *.log
 .DS_Store
+
+# Artefatos de execução local; o benchmark de referência é versionado
+evaluation/local/
+evaluation/resultados_locais/
+tmp/

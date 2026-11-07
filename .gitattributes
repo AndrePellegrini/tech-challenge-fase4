@@ -1,0 +1,2 @@
+# O manifesto do benchmark calcula hashes dos bytes, inclusive quebras de linha.
+evaluation/**/*.jsonl -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

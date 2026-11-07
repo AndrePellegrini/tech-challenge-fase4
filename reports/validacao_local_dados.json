@@ -1,0 +1,27 @@
+{
+  "data_execucao": "2026-11-04",
+  "commit_origem": "1363122f6dcc00be6119b20404a04c1b6ce43a27",
+  "python": "3.12.14",
+  "pandas": "3.0.1",
+  "avaliacoes_originais": 99224,
+  "documentos_validados": 42687,
+  "perfil_identico_ao_checkpoint": true,
+  "ids_unicos": true,
+  "textos_e_metadados_conferidos_com_origem": true,
+  "textos_distintos": 36712,
+  "grupos_de_textos_repetidos": 1203,
+  "documentos_em_grupos_repetidos": 7178,
+  "ocorrencias_adicionais_repetidas": 5975,
+  "maior_repeticao": 351,
+  "ate_3_palavras_incluindo_rotulos": 5778,
+  "ate_3_palavras_sem_rotulos": 8503,
+  "notas_dos_curtos": {
+    "5": 4061,
+    "3": 342,
+    "4": 1072,
+    "1": 226,
+    "2": 77
+  },
+  "sha256_csv": "012b61c7593e34f51fa614efdf802b9c7056ce6aae5307ddb93236e7cfc797d7",
+  "sha256_jsonl": "3519b8a9653c35c386d43959663beb4a9ee804f425a4568b7aac082c458043ce"
+}

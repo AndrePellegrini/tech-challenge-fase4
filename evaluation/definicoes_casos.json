@@ -1,0 +1,382 @@
+[
+  {
+    "id": "R01",
+    "split": "desenvolvimento",
+    "tipo": "respondível",
+    "modo": "recuperacao_e_geracao",
+    "tema": "atraso",
+    "pergunta": "Quais relatos descrevem atraso na entrega?",
+    "ids": [
+      "olist_review_row_001244",
+      "olist_review_row_014000"
+    ],
+    "fatos": [
+      "Há relatos de atraso e de encomenda ainda não recebida.",
+      "Um cliente menciona outra encomenda com atraso de sete dias."
+    ],
+    "limites": [
+      "Não inferir a taxa global de atraso nem o motivo logístico."
+    ]
+  },
+  {
+    "id": "R02",
+    "split": "desenvolvimento",
+    "tipo": "respondível",
+    "modo": "recuperacao_e_geracao",
+    "tema": "nao_recebimento",
+    "pergunta": "O que os clientes relatam sobre compras pagas que ainda não receberam?",
+    "ids": [
+      "olist_review_row_005836",
+      "olist_review_row_010105"
+    ],
+    "fatos": [
+      "Um relato diz que o produto pago não foi recebido e pede orientação para recuperar o dinheiro.",
+      "Outro relata devolução pelo correio e não recebimento até aquele momento."
+    ],
+    "limites": [
+      "Não afirmar que o reembolso foi realizado nem que a nota alta elimina a reclamação."
+    ]
+  },
+  {
+    "id": "R03",
+    "split": "teste_reservado",
+    "tipo": "respondível",
+    "modo": "recuperacao_e_geracao",
+    "tema": "entrega_antecipada",
+    "pergunta": "Há elogios a produtos que chegaram antes do prazo?",
+    "ids": [
+      "olist_review_row_026003",
+      "olist_review_row_026246"
+    ],
+    "fatos": [
+      "Há elogios a entregas anteriores ao prazo.",
+      "Um relato menciona produtos corretos; outro, condições de funcionamento satisfatórias."
+    ],
+    "limites": [
+      "Não confundir antecipação com atraso."
+    ]
+  },
+  {
+    "id": "R04",
+    "split": "desenvolvimento",
+    "tipo": "respondível",
+    "modo": "recuperacao_e_geracao",
+    "tema": "rapidez",
+    "pergunta": "Quais comentários elogiam a rapidez da entrega?",
+    "ids": [
+      "olist_review_row_011967",
+      "olist_review_row_076240"
+    ],
+    "fatos": [
+      "Um cliente elogia entrega super rápida e menciona cinco dias após a compra.",
+      "Outro elogia entrega rápida e embalagem."
+    ],
+    "limites": [
+      "Cinco dias é uma experiência individual, não o prazo médio."
+    ]
+  },
+  {
+    "id": "R05",
+    "split": "teste_reservado",
+    "tipo": "respondível",
+    "modo": "recuperacao_e_geracao",
+    "tema": "avarias",
+    "pergunta": "Quais experiências relatam produtos quebrados ou avariados?",
+    "ids": [
+      "olist_review_row_024766",
+      "olist_review_row_068743"
+    ],
+    "fatos": [
+      "Há relatos de produto avariado ou quebrado.",
+      "Um cliente relata dificuldade para trocar o produto."
+    ],
+    "limites": [
+      "Não afirmar que o transporte causou a quebra; não validar política de troca citada pelo cliente como regra da empresa."
+    ]
+  },
+  {
+    "id": "R06",
+    "split": "desenvolvimento",
+    "tipo": "respondível",
+    "modo": "recuperacao_e_geracao",
+    "tema": "defeitos",
+    "pergunta": "Que problemas de funcionamento ou defeitos são descritos nos comentários?",
+    "ids": [
+      "olist_review_row_001099",
+      "olist_review_row_016169"
+    ],
+    "fatos": [
+      "Um cliente relata defeito e ausência de retorno após contatos.",
+      "Outro descreve torneira com pouca vazão de água."
+    ],
+    "limites": [
+      "São relatos de clientes; não emitir diagnóstico técnico ou afirmar risco comprovado."
+    ]
+  },
+  {
+    "id": "R07",
+    "split": "desenvolvimento",
+    "tipo": "respondível",
+    "modo": "recuperacao_e_geracao",
+    "tema": "item_incorreto",
+    "pergunta": "O que os clientes dizem sobre receber um produto diferente do comprado?",
+    "ids": [
+      "olist_review_row_011442",
+      "olist_review_row_078783"
+    ],
+    "fatos": [
+      "Um cliente pediu produto em cápsulas e recebeu versão líquida.",
+      "Outro relata correção rápida de um envio errado."
+    ],
+    "limites": [
+      "Não afirmar que todos os envios errados foram solucionados."
+    ]
+  },
+  {
+    "id": "R08",
+    "split": "teste_reservado",
+    "tipo": "respondível",
+    "modo": "recuperacao_e_geracao",
+    "tema": "pedido_incompleto",
+    "pergunta": "Há avaliações que descrevem pedidos ou produtos com itens faltantes?",
+    "ids": [
+      "olist_review_row_051612",
+      "olist_review_row_054818"
+    ],
+    "fatos": [
+      "Um relato menciona compra de dois bicos injetores e recebimento de apenas um.",
+      "Outro reclama de peças faltantes."
+    ],
+    "limites": [
+      "Não confundir quantidade comprada com quantidade entregue."
+    ]
+  },
+  {
+    "id": "R09",
+    "split": "desenvolvimento",
+    "tipo": "respondível",
+    "modo": "recuperacao_e_geracao",
+    "tema": "embalagem",
+    "pergunta": "Quais avaliações elogiam a embalagem dos produtos?",
+    "ids": [
+      "olist_review_row_013651",
+      "olist_review_row_051456"
+    ],
+    "fatos": [
+      "Os relatos elogiam produtos bem embalados.",
+      "Também há elogios ao prazo e à qualidade em um dos relatos."
+    ],
+    "limites": [
+      "Não inferir ausência de avarias em toda a base."
+    ]
+  },
+  {
+    "id": "R10",
+    "split": "teste_reservado",
+    "tipo": "respondível",
+    "modo": "recuperacao_e_geracao",
+    "tema": "qualidade_positiva",
+    "pergunta": "Quais aspectos da qualidade dos produtos são elogiados?",
+    "ids": [
+      "olist_review_row_042156",
+      "olist_review_row_094267"
+    ],
+    "fatos": [
+      "Um relato elogia qualidade e conformidade com especificações.",
+      "Outro elogia o material das bolsas, mas considera o tamanho pequeno."
+    ],
+    "limites": [
+      "Preservar a ressalva sobre tamanho; não resumir todos os comentários como elogios sem ressalvas."
+    ]
+  },
+  {
+    "id": "R11",
+    "split": "desenvolvimento",
+    "tipo": "respondível",
+    "modo": "recuperacao_e_geracao",
+    "tema": "atendimento_negativo",
+    "pergunta": "Que reclamações aparecem sobre atendimento e comunicação?",
+    "ids": [
+      "olist_review_row_054732",
+      "olist_review_row_085571"
+    ],
+    "fatos": [
+      "Há reclamações de atendimento e falta de satisfação sobre entrega.",
+      "Um cliente diz que a loja não sabe onde está o produto não recebido."
+    ],
+    "limites": [
+      "Não atribuir responsabilidade comprovada a empresas nem inventar explicação para a falha."
+    ]
+  },
+  {
+    "id": "R12",
+    "split": "teste_reservado",
+    "tipo": "respondível",
+    "modo": "recuperacao_e_geracao",
+    "tema": "atendimento_positivo",
+    "pergunta": "Como os clientes descrevem experiências positivas com o atendimento?",
+    "ids": [
+      "olist_review_row_020796",
+      "olist_review_row_023376"
+    ],
+    "fatos": [
+      "Há elogios ao atendimento e ao produto.",
+      "Os relatos também mencionam entrega no prazo e recomendação."
+    ],
+    "limites": [
+      "Não usar nota como única prova do elogio."
+    ]
+  },
+  {
+    "id": "R13",
+    "split": "desenvolvimento",
+    "tipo": "respondível",
+    "modo": "recuperacao_e_geracao",
+    "tema": "dificuldade_troca",
+    "pergunta": "Quais dificuldades os clientes relatam ao tentar trocar produtos?",
+    "ids": [
+      "olist_review_row_024988",
+      "olist_review_row_059669"
+    ],
+    "fatos": [
+      "Um relato diz que não foi possível trocar produto defeituoso por falta de reposição.",
+      "Outro menciona mais de um mês para efetivar troca de cuba quebrada e envio de peça faltante."
+    ],
+    "limites": [
+      "Não afirmar que a troca do primeiro caso foi concluída."
+    ]
+  },
+  {
+    "id": "R14",
+    "split": "teste_reservado",
+    "tipo": "respondível",
+    "modo": "recuperacao_e_geracao",
+    "tema": "reembolso_pendente",
+    "pergunta": "O que os comentários relatam sobre pedidos de reembolso ainda pendentes?",
+    "ids": [
+      "olist_review_row_085568",
+      "olist_review_row_055751"
+    ],
+    "fatos": [
+      "Um cliente solicitou reembolso por defeito e aguardava resposta.",
+      "Outro aguardava reembolso após cancelamento por falta de estoque."
+    ],
+    "limites": [
+      "Não afirmar estorno concluído nem prazo contratual de pagamento."
+    ]
+  },
+  {
+    "id": "R15",
+    "split": "desenvolvimento",
+    "tipo": "respondível",
+    "modo": "recuperacao_e_geracao",
+    "tema": "custo_frete",
+    "pergunta": "Quais críticas os consumidores fazem ao custo do frete?",
+    "ids": [
+      "olist_review_row_093906",
+      "olist_review_row_071980"
+    ],
+    "fatos": [
+      "Os dois relatos criticam frete caro.",
+      "Um menciona demora e outro diz que houve entrega no prazo, mas mais lenta que em outras lojas."
+    ],
+    "limites": [
+      "Não confundir frete caro com atraso em todos os casos nem inventar valor em reais."
+    ]
+  },
+  {
+    "id": "R16",
+    "split": "teste_reservado",
+    "tipo": "respondível",
+    "modo": "recuperacao_e_geracao",
+    "tema": "rastreamento",
+    "pergunta": "Quais problemas são relatados sobre rastrear a entrega?",
+    "ids": [
+      "olist_review_row_022104",
+      "olist_review_row_097653"
+    ],
+    "fatos": [
+      "Um cliente relata não conseguir rastrear uma compra ainda não recebida.",
+      "Outro diz que recebeu o produto, mas o rastreamento não refletia a entrega."
+    ],
+    "limites": [
+      "Separar não recebimento de rastreamento desatualizado após recebimento."
+    ]
+  },
+  {
+    "id": "R17",
+    "split": "desenvolvimento",
+    "tipo": "respondível",
+    "modo": "recuperacao_e_geracao",
+    "tema": "funcionamento",
+    "pergunta": "Que dificuldades de uso ou funcionamento são relatadas nos produtos?",
+    "ids": [
+      "olist_review_row_070344",
+      "olist_review_row_084640"
+    ],
+    "fatos": [
+      "Um cliente descreve teclas de controle que exigem várias tentativas ou não funcionam.",
+      "Outro relata incompatibilidade do hub com um CD player externo."
+    ],
+    "limites": [
+      "Não tratar incompatibilidade específica como defeito universal do produto."
+    ]
+  },
+  {
+    "id": "R18",
+    "split": "desenvolvimento",
+    "tipo": "respondível",
+    "modo": "recuperacao_e_geracao",
+    "tema": "negacao_sem_defeito",
+    "pergunta": "Existem recomendações positivas que mencionam ausência de defeitos?",
+    "ids": [
+      "olist_review_row_015643",
+      "olist_review_row_005475"
+    ],
+    "fatos": [
+      "Os relatos recomendam os produtos e dizem que não havia defeitos.",
+      "Também mencionam entrega antes do prazo."
+    ],
+    "limites": [
+      "Não classificar a ocorrência da palavra defeito como reclamação quando ela está negada."
+    ]
+  },
+  {
+    "id": "R19",
+    "split": "teste_reservado",
+    "tipo": "respondível",
+    "modo": "recuperacao_e_geracao",
+    "tema": "relato_misto",
+    "pergunta": "Há relatos que combinam elogio e ressalva na mesma experiência?",
+    "ids": [
+      "olist_review_row_029368",
+      "olist_review_row_013390"
+    ],
+    "fatos": [
+      "Um cliente elogia o produto, mas menciona atraso informado.",
+      "Outro elogia a entrega, mas considera o produto mais frágil do que aparentava na foto."
+    ],
+    "limites": [
+      "Preservar os aspectos positivos e negativos; não inferir sentimento por nota."
+    ]
+  },
+  {
+    "id": "R20",
+    "split": "desenvolvimento",
+    "tipo": "respondível",
+    "modo": "recuperacao_e_geracao",
+    "tema": "avaria_com_ressalva",
+    "pergunta": "Há relatos de defeito resolvido ou dano que não impediu o funcionamento?",
+    "ids": [
+      "olist_review_row_076247",
+      "olist_review_row_084023"
+    ],
+    "fatos": [
+      "Um cliente relata pequeno defeito em uma tesoura que já foi resolvido.",
+      "Outro relata parte plástica danificada, sem afetar o funcionamento."
+    ],
+    "limites": [
+      "Não afirmar que todo dano impede o uso ou que todos os problemas foram resolvidos."
+    ]
+  }
+]

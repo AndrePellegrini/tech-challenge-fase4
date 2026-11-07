@@ -1,0 +1,60 @@
+{
+  "casos_previstos": 12,
+  "casos_recebidos": 0,
+  "erros_de_entrada": [],
+  "avaliacao_semantica": "nao_automatizada; preencher ficha humana",
+  "metrica_recuperacao": "acerto de exemplos conhecidos; não é precision nem recall global",
+  "resultados": [
+    {
+      "case_id": "R03",
+      "situacao": "nao_executada"
+    },
+    {
+      "case_id": "R05",
+      "situacao": "nao_executada"
+    },
+    {
+      "case_id": "R08",
+      "situacao": "nao_executada"
+    },
+    {
+      "case_id": "R10",
+      "situacao": "nao_executada"
+    },
+    {
+      "case_id": "R12",
+      "situacao": "nao_executada"
+    },
+    {
+      "case_id": "R14",
+      "situacao": "nao_executada"
+    },
+    {
+      "case_id": "R16",
+      "situacao": "nao_executada"
+    },
+    {
+      "case_id": "R19",
+      "situacao": "nao_executada"
+    },
+    {
+      "case_id": "I03",
+      "situacao": "nao_executada"
+    },
+    {
+      "case_id": "I04",
+      "situacao": "nao_executada"
+    },
+    {
+      "case_id": "O03",
+      "situacao": "nao_executada"
+    },
+    {
+      "case_id": "A03",
+      "situacao": "nao_executada"
+    }
+  ],
+  "origem_execucao": "modelo_real",
+  "modelo_real_executado": false,
+  "observacao": "Origem declarada pelo executor; este script não chama nem autentica um LLM."
+}

@@ -1,6 +1,16 @@
 
 # Voice of Customer Intelligence com RAG
 
+## Entrega de dados e avaliação (P1)
+
+O [índice da entrega P1](docs/entrega_p1_indice.md) reúne o datasheet, os
+30 casos de avaliação (18 de desenvolvimento e 12 reservados), verificadores,
+resultados dos testes de apoio e o [PDF de continuidade](docs/tech_challenge_fase4_entrega_p1.pdf).
+As [instruções de avaliação](evaluation/README.md) explicam como executar o
+benchmark e exportar as predições. Os gabaritos reservados não devem ser usados
+para ajustar recuperação, modelo ou prompt. A avaliação de respostas reais segue
+pendente da integração com LLM; os testes de apoio não medem a qualidade do RAG.
+
 **FIAP POSTECH | Data & AI Scientist | Tech Challenge - Fase 4**
 
 **Versao:** 0.1.0 - Base de Conhecimento e Recuperacao Semantica
@@ -294,11 +304,10 @@ ja estejam completas ou validadas.
 ### 9.1 Clonar o repositorio
 
 ```powershell
-git clone URL_DO_REPOSITORIO
+git clone https://github.com/AndrePellegrini/tech-challenge-fase4.git
 cd tech-challenge-fase4
 ```
 
-Substitua `URL_DO_REPOSITORIO` pela URL publicada no GitHub.
 
 ### 9.2 Criar o ambiente virtual (Windows / PowerShell)
 
