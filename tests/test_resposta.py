@@ -207,6 +207,67 @@ class TestGerarResposta(unittest.TestCase):
             "minha outra encomenda esta em atraso",
         )
 
+    def test_json_truncado_informa_limite_de_tokens(self):
+        """Falha de parse deve preservar o diagnostico de truncamento."""
+        evidencias = [_evidencia()]
+
+        gerador = GeradorFalso(
+            '{"status": "respondida", "resposta": "Um cliente'
+        )
+
+        gerador.ultimo_diagnostico = {
+            "motivo_parada": "limite_tokens",
+            "tokens_gerados": 600,
+            "max_tokens_saida": 600,
+        }
+
+        resposta = gerar_resposta(
+            "Quais problemas foram relatados?",
+            evidencias,
+            gerador,
+        )
+
+        self.assertEqual(
+            resposta.status,
+            Status.ERRO_OPERACIONAL,
+        )
+
+        self.assertIn(
+            "limite_tokens",
+            resposta.resposta,
+        )
+
+    def test_json_invalido_apos_eos_informa_diagnostico(self):
+        """JSON incorreto com EOS nao deve ser chamado de truncamento."""
+        evidencias = [_evidencia()]
+
+        gerador = GeradorFalso(
+            "Esta resposta nao esta em formato JSON."
+        )
+
+        gerador.ultimo_diagnostico = {
+            "motivo_parada": "eos",
+            "tokens_gerados": 42,
+            "max_tokens_saida": 600,
+        }
+
+        resposta = gerar_resposta(
+            "Houve problemas de entrega?",
+            evidencias,
+            gerador,
+        )
+
+        self.assertEqual(
+            resposta.status,
+            Status.ERRO_OPERACIONAL,
+        )
+
+        self.assertIn("eos", resposta.resposta)
+        self.assertNotIn(
+            "limite_tokens",
+            resposta.resposta,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

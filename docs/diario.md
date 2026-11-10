@@ -514,3 +514,35 @@ A implementacao preserva a interface anterior do gerador.
 
 **Pendente:** integrar o diagnostico aos erros de JSON
 e executar testes com o LLM real.
+
+
+## 10/11/2026 - P3.2B: diagnostico de falhas JSON
+
+**Objetivo:** integrar o diagnostico do gerador ao
+tratamento de falhas de interpretacao das respostas.
+
+**Procedimento:**
+1. Criacao de dois testes de regressao.
+2. Execucao inicial: 13 aprovados e 2 falhas esperadas.
+3. Correcao em src/generation/resposta.py.
+4. Nova execucao dos testes especificos.
+5. Execucao da suite completa.
+6. Verificacao de formatacao com Git.
+
+**Resultados:**
+- Testes de resposta: 15/15 aprovados.
+- Suite completa: 35/35 aprovados.
+- Verificacao final git diff --check: sem problemas.
+
+**Conclusao:**
+O sistema passou a preservar informacoes de diagnostico
+quando o modelo retorna JSON invalido.
+
+**Limitacao:**
+Ainda nao houve nova execucao do Qwen real para
+determinar se as falhas anteriores foram causadas
+pelo limite de tokens.
+
+**Decisao relacionada:** D019.
+
+**Proxima atividade:** P3.3 - escopo e abstencao.

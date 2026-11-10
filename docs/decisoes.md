@@ -588,3 +588,70 @@ GeradorQwenLocal, preservando o contrato publico de `gerar()`.
 **Proxima atividade:**
 Conectar o diagnostico aos erros de interpretacao do JSON
 e verificar o comportamento em execucoes reais.
+
+
+**Complemento P3.2B - Diagnostico de erros JSON (10/11/2026)**
+
+Foi integrada a leitura de `ultimo_diagnostico`
+ao tratamento de falhas de interpretacao do JSON.
+
+A resposta continua utilizando `erro_operacional`
+quando o JSON ou schema nao pode ser validado.
+
+O diagnostico passa a distinguir:
+- Geracao interrompida no limite de tokens.
+- Geracao encerrada com EOS.
+- Ausencia de diagnostico no adaptador.
+
+A correcao nao modifica o texto gerado, nao completa
+JSON incompleto e nao transforma falhas operacionais
+em ausencia de evidencias.
+
+**Validacao:** registrar o resultado dos testes
+de regressao e da suite completa apos a execucao.
+
+**Pendente:** avaliar o Qwen real e determinar
+se o limite de tokens explica as falhas observadas.
+
+
+### Complemento - P3.2B: diagnostico de erros JSON
+
+**Data:** 10/11/2026
+
+**Status:** implementado e validado por testes automatizados.
+
+Foi integrada a leitura de `ultimo_diagnostico` ao
+tratamento de erros de interpretacao do JSON em
+`src/generation/resposta.py`.
+
+Quando ocorre uma falha de interpretacao, o sistema
+continua retornando `erro_operacional`, mas agora
+inclui as informacoes disponiveis sobre a geracao:
+
+- motivo_parada
+- tokens_gerados
+- max_tokens_saida
+
+O tratamento permite diferenciar geracoes encerradas
+por EOS de geracoes que atingiram o limite de tokens
+sem encerramento reconhecido.
+
+**Validacao executada:**
+- 15 de 15 testes de resposta aprovados.
+- 35 de 35 testes da suite completa aprovados.
+- git diff --check sem problemas na verificacao final.
+
+**Arquivos modificados:**
+- src/generation/resposta.py
+- tests/test_resposta.py
+
+**Limitacoes:**
+- Os testes desta atividade utilizam geradores simulados.
+- O diagnostico ainda nao foi validado em nova execucao
+  com o Qwen real.
+- A implementacao nao repara automaticamente JSON invalido.
+- A causa dos erros observados no lote P2 ainda precisa
+  ser confirmada com execucoes reais.
+
+**Proximo passo:** avaliar qualidade de geracao,
+com foco em escopo, abstencao e fidelidade das respostas.

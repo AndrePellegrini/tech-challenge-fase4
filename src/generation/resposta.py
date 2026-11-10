@@ -180,12 +180,43 @@ def gerar_resposta(pergunta: str, evidencias: list[Evidencia], gerador) -> Respo
         # cobre qualquer schema invalido, nao so JSON malformado.
         resposta = RespostaRAG.model_validate(dados)
     except (ValueError, ValidationError, TypeError) as erro:
-        # Guarda o motivo da falha no proprio campo "resposta" para
-        # facilitar depuracao, mas sem nunca devolver o texto bruto do
-        # modelo como se fosse uma resposta valida.
+        # Consulta o diagnostico registrado pelo adaptador.
+        # getattr permite trabalhar tambem com geradores falsos
+        # que nao possuem ultimo_diagnostico.
+        diagnostico = getattr(
+            gerador,
+            "ultimo_diagnostico",
+            None,
+        )
+
+        detalhes = []
+
+        if isinstance(diagnostico, dict):
+            for chave in (
+                "motivo_parada",
+                "tokens_gerados",
+                "max_tokens_saida",
+            ):
+                valor = diagnostico.get(chave)
+
+                if valor is not None:
+                    detalhes.append(
+                        f"{chave}={valor}"
+                    )
+
+        # Nao inventa um motivo quando nao existe diagnostico.
+        complemento = (
+            f" [diagnostico: {', '.join(detalhes)}]"
+            if detalhes
+            else ""
+        )
+
         return RespostaRAG(
             status=Status.ERRO_OPERACIONAL,
-            resposta=f"Falha ao interpretar a saida do modelo: {erro}",
+            resposta=(
+                "Falha ao interpretar a saida do modelo: "
+                f"{erro}{complemento}"
+            ),
             afirmacoes=[],
             fontes=[],
         )
