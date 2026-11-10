@@ -538,3 +538,53 @@ as afirmacoes geradas pelo LLM.
 
 **Proxima atividade:** P3.2 - diagnosticar e reduzir
 falhas de geracao de JSON no Qwen2.5-1.5B.
+
+
+## D019 - Diagnosticar o encerramento da geracao do LLM (10/11/2026)
+
+**Status:** implementada e validada por testes automatizados simulados.
+
+**Responsavel:** P3 - Geracao.
+
+**Problema:**
+A entrega P2 identificou dois casos em que o Qwen2.5-1.5B
+produziu JSON invalido. Uma das hipoteses e o truncamento
+da resposta pelo limite de 600 tokens.
+
+A implementacao anterior retornava apenas o texto gerado,
+sem registrar a quantidade de tokens ou o motivo da parada.
+
+**Decisao:**
+Adicionar o atributo `ultimo_diagnostico` ao adaptador
+GeradorQwenLocal, preservando o contrato publico de `gerar()`.
+
+**Informacoes registradas:**
+- motivo_parada: eos, limite_tokens ou outro.
+- tokens_gerados: quantidade de tokens produzidos.
+- max_tokens_saida: limite configurado para a geracao.
+
+**Regras:**
+- A ocorrencia de EOS tem prioridade sobre o limite.
+- Uma geracao que atinge o limite sem EOS e classificada
+  como limite_tokens.
+- O diagnostico anterior e limpo antes de uma nova geracao.
+
+**Arquivos modificados:**
+- src/generation/modelo.py
+- tests/test_modelo.py
+
+**Validacao:**
+- 2 de 2 testes especificos aprovados.
+- 33 de 33 testes da suite completa aprovados.
+- git diff --check sem problemas.
+
+**Limitacoes:**
+- Os testes utilizam modelos e tokenizadores simulados.
+- Ainda nao foi realizada nova medicao com o Qwen real.
+- Atingir o limite nao comprova que o JSON foi truncado.
+- O diagnostico ainda nao foi integrado ao tratamento
+  de erros de parse ou ao trace de avaliacao.
+
+**Proxima atividade:**
+Conectar o diagnostico aos erros de interpretacao do JSON
+e verificar o comportamento em execucoes reais.

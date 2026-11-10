@@ -492,3 +492,25 @@ e verificacao semantica ainda pendentes.
 
 **Proxima etapa:** P3.2 - tratamento de JSON malformado,
 truncamento e desempenho de inferencia.
+
+
+## 10/11/2026 - P3.2: diagnostico de parada do Qwen
+
+Implementado diagnostico de encerramento da geracao
+no adaptador GeradorQwenLocal.
+
+Foi utilizada a estrategia de testes de regressao:
+os dois testes falharam inicialmente pela ausencia
+do atributo ultimo_diagnostico.
+
+Apos a implementacao:
+- Testes especificos: 2/2 aprovados.
+- Suite completa: 33/33 aprovados.
+- Verificacao de whitespace: sem problemas.
+
+A implementacao preserva a interface anterior do gerador.
+
+**Decisao relacionada:** D019.
+
+**Pendente:** integrar o diagnostico aos erros de JSON
+e executar testes com o LLM real.
