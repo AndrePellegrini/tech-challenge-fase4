@@ -581,3 +581,41 @@ em execucoes reais.
 **Decisao relacionada:** D020.
 
 **Proxima atividade:** P3.3B - escopo e abstencao.
+
+
+## 10/11/2026 - P3.3B: triagem preliminar de escopo
+
+**Objetivo:** evitar que perguntas claramente externas
+ao dominio da Olist acionem desnecessariamente
+a recuperacao vetorial e o modelo gerador.
+
+**Procedimento:**
+1. Criacao de tres testes de regressao.
+2. Execucao inicial com duas falhas esperadas.
+3. Implementacao do modulo src/escopo.py.
+4. Integracao da triagem ao inicio de processar_pergunta().
+5. Conferencia isolada das classificacoes.
+6. Validacao da ordem de execucao no src/app.py.
+7. Nova execucao dos testes automatizados.
+
+**Resultados:**
+- Testes da aplicacao: 7/7 aprovados.
+- Suite completa: 41/41 aprovados.
+- git diff --check: sem problemas.
+- Perguntas externas reconhecidas nao acionam o recuperador.
+- Perguntas legitimas sobre avaliacoes continuam no RAG.
+
+**Conclusao:**
+A triagem conservadora foi implementada e validada
+para os cenarios previstos nos testes.
+
+**Limitacoes:**
+O reconhecimento de escopo ainda e parcial.
+Suficiencia de evidencias e fidelidade semantica
+continuam pendentes de validacao.
+
+**Decisao relacionada:** D021.
+
+**Proxima atividade:**
+Integrar os casos de desenvolvimento da P1 e
+avaliar abstencao e geracao com o Qwen real.

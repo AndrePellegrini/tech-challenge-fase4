@@ -13,6 +13,7 @@ import json
 import sys
 
 from src import config
+from src.escopo import claramente_fora_do_escopo
 from src.generation.modelo import GeradorQwenLocal
 from src.generation.resposta import gerar_resposta
 from src.retrieval.contexto import montar_contexto
@@ -52,6 +53,23 @@ def processar_pergunta(pergunta: str, recuperador: Recuperador, gerador: Gerador
     # e tratada como falha operacional, nunca como "sem evidencias" --
     # a ausencia de evidencias so pode ser concluida quando a busca
     # realmente rodou e nao encontrou nada.
+
+    # P3.3B - Triagem conservadora antes da busca vetorial.
+    # Somente perguntas inequivocamente externas sao
+    # recusadas aqui. Casos ambiguos seguem para o RAG.
+    if claramente_fora_do_escopo(pergunta):
+        return {
+            "status": "fora_do_escopo",
+            "resposta": (
+                "Esta solicitacao esta fora do escopo de "
+                "analise das avaliacoes da Olist."
+            ),
+            "afirmacoes": [],
+            "fontes": [],
+            "retrieved_ids": [],
+            "context_ids": [],
+        }
+
     try:
         candidatos = recuperador.buscar(pergunta, k=config.TOP_K_CANDIDATOS)
     except Exception as erro:

@@ -730,3 +730,92 @@ da P1 ainda precisa ser validado.
 
 P3.3B - Tratamento de perguntas fora do escopo
 e de evidencias insuficientes.
+
+
+## D021 - Triagem conservadora de perguntas fora do escopo (10/11/2026)
+
+**Status:** implementada e validada por testes automatizados.
+
+**Responsavel:** P3 - Geracao.
+
+### Problema identificado
+
+A implementacao P2 encaminhava todas as perguntas nao vazias
+diretamente ao recuperador vetorial.
+
+Mesmo perguntas claramente externas ao dominio, como
+questoes de geografia e instrucoes culinarias, acionavam
+a recuperacao semantica.
+
+Como a busca vetorial pode retornar documentos para
+perguntas irrelevantes, o LLM poderia tentar responder
+utilizando conhecimento externo as avaliacoes da Olist.
+
+### Decisao
+
+Implementar uma triagem preliminar e conservadora
+de intencoes fora do escopo, antes da recuperacao.
+
+O filtro deve bloquear somente padroes externos
+reconhecidos com alta confianca.
+
+Perguntas ambiguas ou relacionadas a avaliacoes
+devem continuar no fluxo RAG.
+
+### Implementacao
+
+Arquivos:
+- src/escopo.py
+- src/app.py
+- tests/test_app.py
+
+Foi criada a funcao `claramente_fora_do_escopo()`.
+
+A funcao:
+- Normaliza texto e acentos.
+- Reconhece alguns padroes externos predefinidos.
+- Preserva perguntas com referencias explicitas
+  ao dominio de avaliacoes e consumidores.
+- Evita recuperar documentos em casos bloqueados.
+- Retorna fora_do_escopo com listas de fontes e IDs vazias.
+
+### Validacao
+
+Antes da implementacao:
+- 7 testes executados.
+- 5 aprovados.
+- 2 falhas esperadas.
+
+Depois da implementacao:
+- 7/7 testes de aplicacao aprovados.
+- 41/41 testes da suite completa aprovados.
+- git diff --check sem problemas.
+
+Cenarios verificados:
+- Pergunta geografica claramente externa.
+- Pedido de instrucao culinaria.
+- Pergunta legitima sobre avaliacoes de livros de receitas.
+- Preservacao dos comportamentos anteriores da aplicacao.
+
+### Limitacoes
+
+O filtro nao constitui um classificador geral de escopo.
+
+Perguntas externas com outras formulacoes podem
+seguir para a recuperacao e depender do LLM.
+
+Perguntas ambiguas nao devem ser bloqueadas
+automaticamente por palavras isoladas.
+
+Ainda nao foi implementada uma verificacao completa
+de suficiencia semantica das evidencias.
+
+Os testes utilizaram componentes simulados.
+A qualidade do comportamento com o Qwen real
+ainda precisa ser avaliada.
+
+### Proxima atividade
+
+Validar abstencao por evidencias insuficientes,
+testar perguntas adversariais e integrar os
+casos de desenvolvimento preparados pela P1.
