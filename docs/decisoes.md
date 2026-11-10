@@ -279,3 +279,196 @@ colaboradores, a ausencia de dados indevidos no repositorio
 e a reproducibilidade da instalacao e dos scripts.
 
 **Repositorio remoto:** registrar o endereco apos a publicacao.
+
+
+## D014 - Transformar a busca dos scripts em modulos reutilizaveis (07/11/2026)
+
+**Status:** implementado; validacao end-to-end pendente do indice completo.
+
+**Decisao:** criar `src/config.py`, `src/retrieval/recuperador.py` e
+`src/retrieval/contexto.py` para reutilizar a logica ja validada dos
+scripts experimentais (`testar_embeddings.py`, `testar_chromadb.py`,
+`indexar_base_completa.py`, `auditar_recuperacao.py`), sem reescrever o
+modelo de embeddings nem o indice ja construidos.
+
+**Motivo:** o PDF de entrega P1 pede explicitamente um "recuperador
+reutilizavel", preservando prefixos do E5, IDs e metadados. Os scripts
+da Etapa 3 eram experimentos de linha de comando, nao um componente que
+o pipeline RAG pudesse chamar por pergunta.
+
+**Configuracao:** `Recuperador` carrega o `SentenceTransformer` e a
+colecao do ChromaDB uma unica vez por processo (propriedades com
+inicializacao tardia) e aceita injecao de dependencia para testes, sem
+exigir o indice real. `buscar(pergunta, k)` devolve candidatos com id,
+texto, metadata e score de similaridade (1 - distancia de cosseno).
+
+**Alternativas:** manter a busca apenas nos scripts experimentais e
+duplicar a logica dentro do `app.py`. Descartada porque dificultaria
+testes automatizados e a reutilizacao pelo modulo de avaliacao.
+
+**Limitacoes:** a classe ainda nao foi exercitada contra o indice
+completo de 42.687 documentos neste commit; os testes automatizados
+usam modelo e colecao falsos.
+
+**Conferencia futura:** validar `Recuperador.buscar` contra o indice
+real apos reconstruir a base localmente, comparando os resultados com
+os scripts de auditoria.
+
+
+## D015 - Selecao de contexto com deduplicacao e orcamento de caracteres (07/11/2026)
+
+**Status:** implementado; limites numericos ainda experimentais.
+
+**Decisao:** implementar `montar_contexto` para agrupar candidatos com o
+mesmo `hash_texto` (ou o mesmo texto normalizado, se o hash faltar),
+selecionando ate 8 documentos distintos e ate 4.000 caracteres. O
+primeiro candidato sempre entra, mesmo se sozinho ultrapassar o
+orcamento, para nunca gerar um contexto vazio quando ha pelo menos um
+candidato.
+
+**Motivo:** o PDF de entrega P1 define como ponto de partida
+experimental recuperar ate 50 candidatos e selecionar ate 8 textos
+distintos, alertando para nao preencher o contexto com copias quando ha
+poucos textos distintos. Isso e coerente com D006 e D012, que ja haviam
+identificado textos repetidos na base e preservado os registros
+originais sem deduplicacao automatica no indice.
+
+**Configuracao:** `max_documentos=8`, `max_caracteres=4000`, definidos
+em `src/config.py`. Esses numeros nao foram validados com os 18 casos
+de desenvolvimento e deverao ser ajustados na Etapa 3.
+
+**Alternativas:** deduplicar also por order_id ou review_id; descartada
+porque review_id pode repetir por outros motivos (D004) e nao implica
+texto identico. Limitar o contexto apenas por numero de documentos, sem
+orcamento de caracteres; descartada porque poderia estourar o limite de
+entrada do gerador escolhido.
+
+**Limitacoes:** o orcamento em caracteres e uma aproximacao do
+orcamento real de tokens do gerador; o modulo de geracao usa o
+tokenizador do Qwen para medir tokens, mas a selecao de contexto em si
+nao tokeniza.
+
+**Conferencia futura:** comparar o numero de textos distintos
+efetivamente selecionados por pergunta nos 18 casos de desenvolvimento
+e ajustar `max_documentos`/`max_caracteres` se necessario.
+
+
+## D016 - Qwen2.5-1.5B-Instruct local como gerador, com saida validada por schema (07/11/2026)
+
+**Status:** implementado; qualidade e tempo de geracao ainda nao
+medidos na maquina local.
+
+**Decisao:** adotar `Qwen/Qwen2.5-1.5B-Instruct`, carregado localmente
+via `transformers`, como gerador de respostas, com decodificacao
+gulosa (`do_sample=False`). Validar toda saida do modelo com um schema
+Pydantic (`RespostaRAG`) e rejeitar citacoes cujo marcador, document_id
+ou trecho nao existam literalmente no contexto enviado.
+
+**Motivo:** o guia de implementacao do PDF de entrega P1 recomenda
+testar o Qwen2.5-1.5B-Instruct localmente antes de considerar um
+provedor de API, para nao depender de credenciais nem GPU. O contrato
+de saida exige que "cada ID citado deve existir no contexto" e "cada
+trecho deve ocorrer literalmente na fonte", o que so pode ser garantido
+com verificacao programatica apos o parse.
+
+**Configuracao:**
+- Gerador: `Qwen/Qwen2.5-1.5B-Instruct`, `transformers.AutoModelForCausalLM`.
+- Decodificacao: gulosa, ate 600 tokens de saida.
+- Parse: `json.loads` direto; se falhar, tenta isolar o maior bloco
+  entre a primeira `{` e a ultima `}` (correcao limitada).
+- Validacao estrutural: Pydantic (`status`, `resposta`, `afirmacoes`,
+  `fontes`).
+- Validacao de citacoes: marcador deve existir nas evidencias
+  enviadas; `document_id` da fonte deve coincidir com o da evidencia;
+  `trecho` deve ocorrer (case-insensitive) dentro do texto da
+  evidencia.
+- Falha de parse ou de citacao: sempre vira `erro_operacional`, nunca
+  uma saida aceita sem validacao.
+
+**Alternativas:** usar um provedor de API (OpenAI, Anthropic ou outro)
+com credencial por variavel de ambiente, conforme o guia tambem
+permite. Adiada porque o modelo local evita depender de uma chave que
+o time ainda nao definiu, e porque o Qwen2.5-1.5B e pequeno o
+suficiente para rodar em CPU.
+
+**Limitacoes:** o tempo de geracao e a qualidade das respostas em CPU
+ainda nao foram medidos com os casos de desenvolvimento reais. A
+verificacao estrutural das citacoes nao comprova que a afirmacao
+realmente decorre do trecho citado (suporte semantico), apenas que o
+trecho existe literalmente na fonte.
+
+**Conferencia futura:** medir tempo de geracao e qualidade com os 18
+casos de desenvolvimento; decidir se o modelo local e viavel ou se e
+necessario migrar para um provedor de API; revisar manualmente se as
+afirmacoes realmente decorrem dos trechos citados.
+
+
+## D017 - Validacao end-to-end local: dois achados corrigidos, uma limitacao documentada (07/11/2026)
+
+**Status:** pipeline validado contra o indice completo (42.687
+documentos) e o Qwen2.5-1.5B-Instruct local, em uma maquina Windows.
+
+**Decisao:** manter a implementacao de D014-D016, com duas correcoes
+aplicadas apos a reproducao local, e documentar uma limitacao de
+qualidade do gerador observada na primeira execucao real.
+
+**Achado 1 - excecao nao tratada em `src/app.py`:** a chamada a
+`montar_contexto` nao estava dentro de um bloco try/except, entao um
+erro ali derrubaria o processo com uma excecao nao tratada, em vez de
+devolver `erro_operacional` como as demais etapas do fluxo. Corrigido
+com um segundo try/except ao redor da montagem de contexto.
+
+**Achado 2 - saida corrompida ao redirecionar a CLI no Windows:** com
+`print(json.dumps(..., ensure_ascii=False))`, a codificacao usada para
+escrever em um arquivo/pipe redirecionado no Windows seguia o locale
+do sistema (`cp1252` nesta maquina), nao UTF-8 -- acentos como "a" e "o"
+viravam bytes cp1252 validos, mas invalidos como UTF-8 para quem le o
+arquivo esperando essa codificacao. Corrigido com
+`sys.stdout.reconfigure(encoding="utf-8")` no inicio de `main()`.
+Verificado lendo os bytes brutos do arquivo de saida antes e depois da
+correcao (antes: `\xe1` solto; depois: `\xc3\xa1`, UTF-8 correto para
+"a" acentuado).
+
+**Observacao de qualidade (nao e um bug de codigo):** na primeira
+pergunta real testada ("Quais relatos descrevem atraso na entrega?"),
+o Qwen2.5-1.5B-Instruct local devolveu `status: "respondida"` com
+`afirmacoes` citando corretamente os marcadores F1-F8, mas com o campo
+`fontes` vazio (o modelo nao preencheu a lista de
+marcador/document_id/trecho pedida no schema, apesar de instruido a
+faze-lo). A verificacao de citacoes nao falhou porque
+`validar_citacoes` confere os marcadores citados contra as evidencias
+realmente enviadas (nao contra o campo `fontes` da propria resposta),
+entao o resultado continuou coerente -- mas a riqueza da citacao
+(document_id e trecho explicitos por fonte) ficou incompleta nesta
+execucao.
+
+**Configuracao da execucao de validacao:**
+- Dataset baixado via `kagglehub` nesta sessao; CSV identico ao
+  usado nas Etapas 1-3 anteriores (mesmo SHA-256 da base: D009).
+- `requirements.txt` atualizado para as versoes realmente resolvidas
+  pelo pip nesta maquina: `pydantic==2.14.3`, `transformers==5.22.2`,
+  `torch==2.15.0` (via dependencias de `sentence-transformers` e
+  `chromadb`, sem pin explicito anterior).
+- 29 testes automatizados aprovados (`python -m unittest discover -s
+  tests -v`).
+- Indexacao completa validada: 42.687/42.687 documentos no ChromaDB.
+- CLI executada com sucesso contra o indice real e o LLM local.
+
+**Alternativas:** aceitar a saida sem forcar UTF-8, deixando a
+responsabilidade para quem consome a CLI configurar o proprio
+ambiente. Descartada porque o contrato de saida da aplicacao deve ser
+UTF-8 de forma consistente entre plataformas, independente do locale
+de quem executa.
+
+**Limitacoes:** a observacao sobre `fontes` vazio vem de uma unica
+pergunta; nao prova um padrao geral do modelo. A correcao de
+codificacao foi validada no Windows desta maquina; nao foi testada em
+Linux/macOS (onde o locale padrao costuma ser UTF-8 e o problema
+provavelmente nao ocorreria, mas a correcao e inofensiva nesses casos).
+
+**Conferencia futura:** medir, nos 18 casos de desenvolvimento reais,
+com que frequencia o campo `fontes` fica incompleto e decidir se vale
+a pena reforcar o prompt, pedir uma segunda tentativa de geracao, ou
+preencher `fontes` automaticamente a partir das `afirmacoes` e das
+evidencias quando o modelo citar marcadores validos mas esquecer de
+listar as fontes correspondentes.

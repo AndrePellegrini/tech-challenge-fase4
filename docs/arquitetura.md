@@ -201,24 +201,39 @@ mas reduziu a precisao observada em sua versao reformulada.
 
 Portanto, nao foi adotado como padrao definitivo.
 
-## 5. Fluxo generativo planejado
+## 5. Fluxo generativo implementado
 
-A proxima evolucao devera:
+Implementado em `src/app.py` (`processar_pergunta`), chamando os
+modulos abaixo. Carrega o modelo de embeddings, o indice e o LLM uma
+unica vez por processo.
 
-1. Receber e validar uma pergunta.
-2. Identificar se esta no escopo das avaliacoes.
-3. Recuperar comentarios relevantes.
-4. Selecionar evidencias sem repeticoes desnecessarias.
-5. Verificar pertinencia e suficiencia das evidencias.
-6. Construir contexto com identificadores de fonte.
-7. Enviar pergunta e contexto ao LLM.
-8. Gerar resposta restrita as informacoes sustentadas.
-9. Exibir os documentos usados como evidencia.
-10. Abster-se quando nao houver suporte suficiente.
+1. Validar a pergunta (vazia -> `erro_operacional` sem chamar o resto).
+2. Recuperar candidatos com `Recuperador.buscar`
+   (`src/retrieval/recuperador.py`). Falha operacional aqui sempre vira
+   `erro_operacional`, nunca `evidencias_insuficientes`.
+3. Selecionar evidencias distintas e dentro do orcamento com
+   `montar_contexto` (`src/retrieval/contexto.py`). Sem candidatos, o
+   fluxo retorna `evidencias_insuficientes` sem chamar o LLM.
+4. Montar o prompt com instrucoes e dados em blocos separados
+   (`construir_prompt`, `src/generation/resposta.py`).
+5. Gerar a resposta com o Qwen2.5-1.5B-Instruct local
+   (`GeradorQwenLocal.gerar`, `src/generation/modelo.py`).
+6. Interpretar a saida como JSON, validar a estrutura com Pydantic e
+   verificar se cada marcador, `document_id` e trecho citados existem
+   literalmente no contexto enviado (`gerar_resposta`,
+   `validar_citacoes`). Falha de parse ou de citacao vira
+   `erro_operacional`.
+7. Devolver o contrato de saida publico, com `retrieved_ids` (todos os
+   candidatos recuperados) e `context_ids` (os efetivamente enviados
+   ao LLM).
 
-O LLM ainda nao foi escolhido e validado.
+Interface disponivel: CLI minima (`python -m src.app --pergunta "..."`).
+Execucao em lote dos casos de desenvolvimento:
+`src/evaluation/executar_casos.py`.
 
-A interface de usuario ainda nao foi implementada.
+O modelo gerador (Qwen2.5-1.5B-Instruct local) foi escolhido e
+integrado (D016), mas ainda nao teve tempo e qualidade medidos com os
+casos de desenvolvimento reais.
 
 ## 6. Rastreabilidade
 
@@ -290,14 +305,25 @@ o pipeline a partir do dataset oficial.
 
 ### Obrigatorias
 
-1. Integrar recuperacao e montagem de contexto.
-2. Escolher e integrar o LLM.
-3. Implementar citacoes e verificacao de evidencias.
-4. Implementar tratamento de perguntas fora do escopo.
-5. Implementar abstencao por insuficiencia de informacao.
-6. Avaliar relevancia e fidelidade das respostas.
-7. Construir interface de demonstracao.
-8. Preparar documentacao final e video.
+1. ~~Integrar recuperacao e montagem de contexto.~~ Implementado em
+   `src/retrieval/recuperador.py` e `src/retrieval/contexto.py` (D014, D015).
+2. ~~Escolher e integrar o LLM.~~ Implementado em
+   `src/generation/modelo.py` com Qwen2.5-1.5B-Instruct local (D016).
+3. ~~Implementar citacoes e verificacao de evidencias.~~ Implementado em
+   `src/generation/resposta.py`, com validacao de marcador, document_id
+   e trecho literal (D016).
+4. Implementar tratamento de perguntas fora do escopo. Parcial: o
+   status `fora_do_escopo` e definido pelo proprio LLM a partir do
+   prompt-base; ainda sem validacao sistematica com casos reais.
+5. Implementar abstencao por insuficiencia de informacao. Parcial: sem
+   candidatos recuperados, o sistema abstem automaticamente, sem
+   chamar o LLM; a decisao de insuficiencia apos a recuperacao ainda
+   depende do LLM.
+6. Avaliar relevancia e fidelidade das respostas. Pendente: depende do
+   benchmark oficial de 18+12 casos da frente de dados (P1).
+7. Construir interface de demonstracao. Implementado como CLI minima
+   (`src/app.py`); interface grafica ainda pendente.
+8. Preparar documentacao final e video. Pendente.
 
 ### Complementares
 

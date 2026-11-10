@@ -18,3 +18,5 @@ data/vectorstore/*
 # Artefatos locais
 *.log
 .DS_Store
+# Predicoes geradas localmente: contem trechos literais de avaliacoes
+reports/predicoes_*.jsonl
