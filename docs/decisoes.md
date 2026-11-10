@@ -472,3 +472,69 @@ a pena reforcar o prompt, pedir uma segunda tentativa de geracao, ou
 preencher `fontes` automaticamente a partir das `afirmacoes` e das
 evidencias quando o modelo citar marcadores validos mas esquecer de
 listar as fontes correspondentes.
+
+
+## D018 - Fortalecer o contrato de citacoes da geracao (10/11/2026)
+
+**Status:** implementada e validada por testes automatizados em 10/11/2026.
+
+**Responsavel:** P3 - Geracao.
+
+**Decisao:** exigir que respostas com status `respondida`
+possuam afirmacoes estruturadas e evidencias rastreaveis.
+Quando o modelo citar marcadores validos nas afirmacoes,
+mas omitir a lista de fontes, permitir sua reconstrucao
+deterministica a partir do contexto efetivamente enviado.
+
+**Motivo:** a implementacao P2 pode aceitar respostas sem
+afirmacoes nem fontes. O Qwen tambem apresentou omissoes
+na lista de fontes, mesmo quando citou marcadores validos.
+
+**Regras planejadas:**
+- Rejeitar respostas substantivas sem afirmacoes fundamentadas.
+- Validar os marcadores citados contra o contexto.
+- Nao criar fontes inexistentes.
+- Reutilizar document_id e trecho da evidencia original.
+- Rejeitar citacoes divergentes ou inventadas.
+- Manter falhas de contrato distintas de ausencia de evidencias.
+
+**Limitacao:** a validacao estrutural nao comprova que
+uma afirmacao seja semanticamente sustentada pelo trecho.
+Essa verificacao sera tratada separadamente.
+
+**Criterio de aceite:** os testes de regressao devem
+demonstrar rejeicao de respostas sem evidencias e
+reconstrucao correta de fontes omitidas pelo LLM.
+
+**Conferencia futura:** executar toda a suite de testes,
+verificar os casos de desenvolvimento da P1 e registrar
+os resultados antes do merge.
+
+
+**Resultado da implementacao (10/11/2026):**
+
+- Antes da correcao: 13 testes de geracao executados,
+  sendo 11 aprovados e 2 falhas esperadas.
+- Falha 1: resposta sem afirmacoes e fontes era aceita.
+- Falha 2: fontes omitidas pelo LLM nao eram reconstruidas.
+- Depois da correcao: 13 de 13 testes de geracao aprovados.
+- Suite completa: 31 de 31 testes aprovados.
+
+**Arquivos modificados:**
+- `src/generation/resposta.py`
+- `tests/test_resposta.py`
+
+**Correcao aplicada:**
+- Exigir afirmacoes e fontes rastreaveis para respostas.
+- Validar marcadores contra as evidencias reais.
+- Reconstruir fontes omitidas a partir do contexto.
+- Rejeitar IDs ou trechos de citacao invalidos.
+- Exigir correspondencia literal dos trechos citados.
+
+**Limitacao remanescente:**
+Os testes confirmam a consistencia estrutural,
+mas nao comprovam a fidelidade semantica de todas
+as afirmacoes geradas pelo LLM.
+
+**Proxima atividade:** P3.2 - diagnosticar e reduzir
+falhas de geracao de JSON no Qwen2.5-1.5B.

@@ -412,128 +412,83 @@ Comparar a recuperacao semantica original com um experimento
 de reranking multilingual, preservando o indice existente.
 
 
-## Etapa 2 da integracao - RAG basico (07/11/2026)
+## Etapa 3.5 - Experimento de reranking (04/11/2026)
 
-**Status:** codigo implementado e testado com dependencias falsas;
-reproducao local em andamento (dataset baixado, base reconstruida,
-indice completo em construcao).
+**Status:** concluida e analisada.
 
 ### Objetivo
 
-Implementar o RAG basico pedido na Etapa 2 do PDF de entrega P1:
-recuperador reutilizavel, montagem de contexto, integracao de um LLM,
-resposta com citacoes verificaveis e execucao por CLI.
+Verificar se um modelo cross-encoder multilingual melhora a
+relevancia das avaliacoes recuperadas pelo E5 e ChromaDB.
 
-### Implementacoes realizadas
+### Execucao
 
-- `src/config.py`: caminhos, modelos e parametros centralizados.
-- `src/retrieval/tipos.py`: `Candidato` e `Evidencia` (tipos
-  compartilhados entre recuperacao e geracao).
-- `src/retrieval/recuperador.py`: `Recuperador.buscar` reaproveita o
-  modelo E5 e a colecao do ChromaDB ja existentes, com carregamento
-  tardio e suporte a injecao de dependencia para testes (D014).
-- `src/retrieval/contexto.py`: `montar_contexto` deduplica por
-  `hash_texto`, respeita um orcamento de documentos/caracteres e nunca
-  preenche o contexto com copias (D015).
-- `src/generation/modelo.py`: `GeradorQwenLocal`, adaptador do
-  Qwen2.5-1.5B-Instruct local via `transformers` (D016).
-- `src/generation/resposta.py`: prompt-base, parse com correcao
-  limitada, schema Pydantic (`RespostaRAG`) e verificacao de citacoes
-  (marcador, document_id e trecho literal) (D016).
-- `src/app.py`: `processar_pergunta` orquestra o fluxo completo, com
-  tratamento de erro operacional em cada etapa; `python -m src.app
-  --pergunta "..."` como CLI.
-- `src/evaluation/executar_casos.py`: executa um lote de casos e salva
-  predicoes em JSONL, no contrato definido pelo PDF.
-- `data/eval/casos_exemplo.jsonl`: 6 perguntas ilustrativas (nao o
-  benchmark oficial de 30 casos da frente de dados, que nao foi
-  incluido no repositorio).
-- Testes automatizados novos: `tests/test_contexto.py`,
-  `tests/test_recuperador.py`, `tests/test_resposta.py`,
-  `tests/test_app.py` -- todos com modelo/colecao/gerador falsos, sem
-  depender do indice real nem do download do LLM.
+Arquivo: `scripts/testar_reranker.py`
 
-### Reproducao local executada nesta sessao
+Modelo: `cross-encoder/mmarco-mMiniLMv2-L12-H384-v1`.
 
-- Dataset baixado via `kagglehub` (`olistbr/brazilian-ecommerce`) e
-  `olist_order_reviews_dataset.csv` copiado para `data/raw/`.
-- `.venv` criado; `requirements.txt` atualizado com as versoes
-  realmente instaladas (`pydantic==2.14.3`, `transformers==5.22.2`,
-  `torch==2.15.0`, resolvidas via `sentence-transformers`/`chromadb`).
-- `scripts/explorar_avaliacoes.py`: reproduziu exatamente os numeros
-  documentados (42.687 documentos aproveitaveis, 56.537 sem texto).
-- `scripts/construir_base.py`: 42.687 linhas de entrada, 42.687
-  documentos gerados.
-- `python -m unittest discover -s tests -v`: **29 testes executados,
-  29 aprovados** (21 novos da integracao + 8 das Etapas 1-2).
-- `scripts/indexar_base_completa.py`: assinatura SHA-256 da base
-  (`3519b8a9...`) identica a registrada em D009, confirmando que os
-  dados reconstruidos localmente batem com os da sessao original.
+Foram recuperados 50 candidatos para cada consulta e
+comparados os oito primeiros resultados antes e depois
+do reranking.
 
-### Correcao feita durante a revisao
+### Resultados
 
-- `src/app.py` nao tinha tratamento de excecao ao redor de
-  `montar_contexto`; um erro ali derrubaria o processo em vez de
-  devolver `erro_operacional`. Corrigido com um segundo bloco
-  try/except.
-- `tests/test_recuperador.py` usava uma lista Python simples como
-  retorno falso de `encode(...)`, mas o codigo de producao chama
-  `.tolist()` no vetor (presumindo `numpy.ndarray`, como o
-  `SentenceTransformer` real devolve). Corrigido para o teste devolver
-  `numpy.array(...)`, validando o mesmo caminho que o codigo real usa.
+Pergunta original:
+- E5: 1/8 relevante.
+- E5 + reranker: 6/8 relevantes.
+- Textos distintos: 5 com E5 e 7 com reranker.
 
-### Validacao end-to-end concluida nesta sessao
+Pergunta reformulada:
+- E5: 8/8 relevantes.
+- E5 + reranker: 7/8 relevantes.
+- Textos distintos: 8 em ambos os casos.
 
-- Indexacao completa validada: 42.687/42.687 documentos no ChromaDB
-  (mesmo SHA-256 da base de D009).
-- `python -m src.app --pergunta "Quais relatos descrevem atraso na
-  entrega?"` executado com sucesso contra o indice real: `status:
-  "respondida"`, 50 candidatos recuperados, 8 selecionados para o
-  contexto, afirmacoes citando corretamente os marcadores F1-F8.
-- Dois bugs reais encontrados e corrigidos durante a validacao (ver
-  D017): excecao nao tratada em `montar_contexto` dentro de
-  `src/app.py`; saida da CLI corrompida ao redirecionar no Windows por
-  falta de `sys.stdout.reconfigure(encoding="utf-8")`.
-- `src/evaluation/executar_casos.py` executado com os 6 casos de
-  exemplo (`data/eval/casos_exemplo.jsonl`), em CPU:
+### Conclusoes
 
-| case_id | status obtido | tipo esperado | tempo (s) |
-|---|---|---|---:|
-| exemplo_001 | erro_operacional | respondivel | 359,8 |
-| exemplo_002 | respondida | respondivel | 295,5 |
-| exemplo_003 | erro_operacional | respondivel | 458,6 |
-| exemplo_004 | respondida | evidencias_insuficientes | 183,0 |
-| exemplo_005 | evidencias_insuficientes | fora_do_escopo | 201,3 |
-| exemplo_006 | respondida | fora_do_escopo (adversarial) | 152,1 |
+O reranker melhorou a recuperacao para a pergunta original,
+mas piorou ligeiramente a pergunta reformulada.
 
-### Analise dos resultados do lote
+Ainda foram recuperados comentarios sobre problemas de
+entrega para uma pergunta sobre defeitos dos produtos.
 
-Os dois `erro_operacional` (exemplo_001, exemplo_003) vieram de JSON
-malformado gerado pelo Qwen2.5-1.5B ("Expecting value" / "Expecting
-',' delimiter"), consistente com a saida sendo cortada no limite de
-`MAX_TOKENS_SAIDA = 600` antes de fechar o objeto JSON -- o
-comportamento esperado do schema (rejeitar e marcar como falha, nunca
-aceitar JSON invalido) funcionou corretamente, mas o limite de tokens
-provavelmente precisa subir.
+A melhora nao foi consistente entre as duas consultas.
 
-Os demais quatro casos nao bateram com o `tipo_esperado` ilustrativo
-(exemplo_004, exemplo_005, exemplo_006): o modelo respondeu quando o
-esperado era abster-se ou recusar por escopo. Isso e esperado de um
-modelo de 1.5B sem ajuste fino nessas categorias, e e exatamente o
-tipo de lacuna que a Etapa 3 (validacao sistematica com os casos
-reais da frente de dados) deve medir e corrigir -- `tipo_esperado` em
-`casos_exemplo.jsonl` e apenas ilustrativo, nao um gabarito validado.
+### Decisao
 
-Tempo de geracao em CPU: entre 150s e 460s por pergunta nesta maquina
-(sem GPU). Isso e alto para uma demonstracao ao vivo e deve ser
-medido/otimizado antes do video final (ver D016 e Prioridade 2 do
-README).
+D012 - Manter o reranker como opcao experimental e
+implementar diversidade de evidencias, preservando
+todos os registros da base documental.
 
-### Pendente
+### Proxima atividade
 
-- Investigar se aumentar `MAX_TOKENS_SAIDA` reduz os `erro_operacional`
-  por truncamento de JSON.
-- Medir e, se necessario, melhorar o tempo de geracao em CPU.
-- Reforcar o prompt ou pos-processar para reduzir casos onde o modelo
-  responde quando deveria abster-se ou recusar por escopo.
-- Obter e rodar o benchmark oficial de 18+12 casos da frente de dados.
+Iniciar a construcao do contexto recuperado para o
+pipeline RAG, mantendo a rastreabilidade das fontes.
+
+A avaliacao sistematica permanece obrigatoria antes
+da entrega final.
+
+
+## 10/11/2026 - P3.1: validacao das respostas e citacoes
+
+**Objetivo:** corrigir falhas do contrato de saida do RAG
+identificadas na implementacao P2.
+
+**Procedimento:**
+1. Criacao de dois testes de regressao.
+2. Execucao inicial: 11 aprovados e 2 falhas esperadas.
+3. Correcao da validacao das respostas.
+4. Implementacao da reconstrucao deterministica de fontes.
+5. Nova execucao dos testes de geracao e da suite completa.
+
+**Resultados:**
+- Testes de geracao: 13/13 aprovados.
+- Suite completa: 31/31 aprovados.
+- Nenhuma falha nos testes automatizados.
+
+**Decisao relacionada:** D018.
+
+**Limitacao:** validacao do comportamento real do Qwen
+e verificacao semantica ainda pendentes.
+
+**Proxima etapa:** P3.2 - tratamento de JSON malformado,
+truncamento e desempenho de inferencia.

@@ -132,7 +132,7 @@ def validar_citacoes(resposta: RespostaRAG, evidencias: list[Evidencia]) -> list
                 f"{fonte.document_id} != {evidencia.document_id}"
             )
 
-        if fonte.trecho.casefold().strip() not in evidencia.trecho.casefold():
+        if not fonte.trecho.strip() or fonte.trecho not in evidencia.trecho:
             # Exigencia do PDF: "cada trecho deve ocorrer literalmente
             # na fonte". Comparacao case-insensitive, mas sem normalizar
             # espacos/pontuacao -- um trecho parafraseado falha aqui de
@@ -190,17 +190,77 @@ def gerar_resposta(pergunta: str, evidencias: list[Evidencia], gerador) -> Respo
             fontes=[],
         )
 
+
     if resposta.status == Status.RESPONDIDA:
-        # So faz sentido validar citacoes quando o modelo afirma ter
-        # respondido com evidencias; uma recusa (evidencias_insuficientes
-        # ou fora_do_escopo) pode legitimamente vir com fontes vazias.
-        problemas = validar_citacoes(resposta, evidencias)
+        # Uma resposta substantiva precisa ter afirmacoes
+        # associadas a evidencias reais.
+        problemas = []
+
+        if not resposta.resposta.strip():
+            problemas.append("Resposta textual vazia")
+
+        if not resposta.afirmacoes:
+            problemas.append(
+                "Resposta marcada como respondida sem afirmacoes"
+            )
+
+        for indice, afirmacao in enumerate(
+            resposta.afirmacoes, start=1
+        ):
+            if not afirmacao.texto.strip():
+                problemas.append(
+                    f"Afirmacao {indice} sem texto"
+                )
+
+            if not afirmacao.fontes:
+                problemas.append(
+                    f"Afirmacao {indice} sem fontes"
+                )
+
+        # Verifica todas as citacoes fornecidas pelo modelo.
+        # Uma citacao invalida nunca e corrigida silenciosamente.
+        problemas.extend(
+            validar_citacoes(resposta, evidencias)
+        )
+
         if problemas:
             return RespostaRAG(
                 status=Status.ERRO_OPERACIONAL,
-                resposta="Citacoes invalidas: " + "; ".join(problemas),
+                resposta=(
+                    "Contrato de resposta invalido: "
+                    + "; ".join(problemas)
+                ),
                 afirmacoes=[],
                 fontes=[],
             )
+
+        # Apos validar os marcadores, podemos reconstruir
+        # fontes omitidas usando exclusivamente o contexto real.
+        por_marcador = {
+            evidencia.marcador: evidencia
+            for evidencia in evidencias
+        }
+
+        fontes_existentes = {
+            fonte.marcador: fonte
+            for fonte in resposta.fontes
+        }
+
+        # Preserva a ordem e remove marcadores repetidos.
+        marcadores_usados = list(dict.fromkeys(
+            marcador
+            for afirmacao in resposta.afirmacoes
+            for marcador in afirmacao.fontes
+        ))
+
+        resposta.fontes = [
+            fontes_existentes.get(marcador)
+            or Fonte(
+                marcador=marcador,
+                document_id=por_marcador[marcador].document_id,
+                trecho=por_marcador[marcador].trecho,
+            )
+            for marcador in marcadores_usados
+        ]
 
     return resposta

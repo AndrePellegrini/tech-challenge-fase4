@@ -100,8 +100,13 @@ class TestGerarResposta(unittest.TestCase):
         evidencias = [_evidencia()]
         saida = json.dumps({
             "status": "respondida",
-            "resposta": "Um relato menciona atraso de sete dias [F1].",
-            "afirmacoes": [{"texto": "Atraso de sete dias", "fontes": ["F1"]}],
+            "resposta": "Uma avaliacao relata atraso de uma encomenda [F1].",
+            "afirmacoes": [
+                {
+                    "texto": "Uma encomenda esta em atraso",
+                    "fontes": ["F1"],
+                }
+            ],
             "fontes": [{"marcador": "F1", "document_id": "doc-1", "trecho": "outra encomenda esta em atraso"}],
         })
         gerador = GeradorFalso(saida)
@@ -142,6 +147,65 @@ class TestGerarResposta(unittest.TestCase):
         resposta = gerar_resposta("Qual a previsao do tempo?", evidencias, gerador)
 
         self.assertEqual(resposta.status, Status.FORA_DO_ESCOPO)
+
+    def test_rejeita_resposta_sem_afirmacoes_e_sem_fontes(self):
+        evidencias = [_evidencia()]
+
+        saida = json.dumps({
+            "status": "respondida",
+            "resposta": "Todos os clientes tiveram atraso de 7 dias.",
+            "afirmacoes": [],
+            "fontes": [],
+        })
+
+        gerador = GeradorFalso(saida)
+
+        resposta = gerar_resposta(
+            "Quais problemas de entrega foram relatados?",
+            evidencias,
+            gerador,
+        )
+
+        self.assertEqual(
+            resposta.status,
+            Status.ERRO_OPERACIONAL,
+        )
+
+    def test_reconstroi_fontes_omitidas_pelo_modelo(self):
+        evidencias = [_evidencia()]
+
+        saida = json.dumps({
+            "status": "respondida",
+            "resposta": "Uma encomenda esta em atraso [F1].",
+            "afirmacoes": [
+                {
+                    "texto": "Uma encomenda esta em atraso",
+                    "fontes": ["F1"],
+                }
+            ],
+            "fontes": [],
+        })
+
+        gerador = GeradorFalso(saida)
+
+        resposta = gerar_resposta(
+            "Houve atraso?",
+            evidencias,
+            gerador,
+        )
+
+        self.assertEqual(
+            resposta.status,
+            Status.RESPONDIDA,
+        )
+
+        self.assertEqual(len(resposta.fontes), 1)
+        self.assertEqual(resposta.fontes[0].marcador, "F1")
+        self.assertEqual(resposta.fontes[0].document_id, "doc-1")
+        self.assertEqual(
+            resposta.fontes[0].trecho,
+            "minha outra encomenda esta em atraso",
+        )
 
 
 if __name__ == "__main__":
