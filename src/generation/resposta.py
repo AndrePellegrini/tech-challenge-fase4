@@ -220,7 +220,25 @@ def gerar_resposta(pergunta: str, evidencias: list[Evidencia], gerador) -> Respo
             afirmacoes=[],
             fontes=[],
         )
+    # P3.3A - Validar citacoes tambem em recusas.
+    # Uma recusa pode ter fontes vazias, mas nao pode
+    # apresentar fontes ou marcadores inexistentes.
+    if resposta.status != Status.RESPONDIDA:
+        problemas_recusa = validar_citacoes(
+            resposta,
+            evidencias,
+        )
 
+        if problemas_recusa:
+            return RespostaRAG(
+                status=Status.ERRO_OPERACIONAL,
+                resposta=(
+                    "Citacoes invalidas em resposta de recusa: "
+                    + "; ".join(problemas_recusa)
+                ),
+                afirmacoes=[],
+                fontes=[],
+            )
 
     if resposta.status == Status.RESPONDIDA:
         # Uma resposta substantiva precisa ter afirmacoes

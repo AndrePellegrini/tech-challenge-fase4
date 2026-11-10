@@ -267,7 +267,91 @@ class TestGerarResposta(unittest.TestCase):
             "limite_tokens",
             resposta.resposta,
         )
+    def test_insuficiencia_com_fonte_inventada_e_rejeitada(self):
+        """Recusas tambem precisam respeitar as fontes reais."""
+        evidencias = [_evidencia()]
 
+        saida = json.dumps({
+            "status": "evidencias_insuficientes",
+            "resposta": "Nao foi possivel determinar o prazo [F9].",
+            "afirmacoes": [
+                {
+                    "texto": "Prazo nao identificado",
+                    "fontes": ["F9"],
+                }
+            ],
+            "fontes": [
+                {
+                    "marcador": "F9",
+                    "document_id": "documento-inexistente",
+                    "trecho": "Prazo de entrega desconhecido",
+                }
+            ],
+        })
+
+        resposta = gerar_resposta(
+            "Qual foi o prazo de entrega?",
+            evidencias,
+            GeradorFalso(saida),
+        )
+
+        self.assertEqual(
+            resposta.status,
+            Status.ERRO_OPERACIONAL,
+        )
+
+    def test_fora_do_escopo_com_fonte_inventada_e_rejeitado(self):
+        """Fonte inexistente nao pode ser aceita em nenhuma recusa."""
+        evidencias = [_evidencia()]
+
+        saida = json.dumps({
+            "status": "fora_do_escopo",
+            "resposta": "Pergunta fora do dominio.",
+            "afirmacoes": [],
+            "fontes": [
+                {
+                    "marcador": "F99",
+                    "document_id": "documento-falso",
+                    "trecho": "Informacao inventada",
+                }
+            ],
+        })
+
+        resposta = gerar_resposta(
+            "Qual e a capital da Franca?",
+            evidencias,
+            GeradorFalso(saida),
+        )
+
+        self.assertEqual(
+            resposta.status,
+            Status.ERRO_OPERACIONAL,
+        )
+
+    def test_recusa_legitima_sem_fontes_e_aceita(self):
+        """Uma recusa pode ser valida sem citar documentos."""
+        evidencias = [_evidencia()]
+
+        saida = json.dumps({
+            "status": "evidencias_insuficientes",
+            "resposta": (
+                "A avaliacao nao informa a data exata "
+                "de entrega do pedido."
+            ),
+            "afirmacoes": [],
+            "fontes": [],
+        })
+
+        resposta = gerar_resposta(
+            "Qual foi a data exata da entrega?",
+            evidencias,
+            GeradorFalso(saida),
+        )
+
+        self.assertEqual(
+            resposta.status,
+            Status.EVIDENCIAS_INSUFICIENTES,
+        )
 
 if __name__ == "__main__":
     unittest.main()

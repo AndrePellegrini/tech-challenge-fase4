@@ -655,3 +655,78 @@ sem encerramento reconhecido.
 
 **Proximo passo:** avaliar qualidade de geracao,
 com foco em escopo, abstencao e fidelidade das respostas.
+
+
+## D020 - Validar citacoes em todos os estados de resposta (10/11/2026)
+
+**Status:** implementada e validada por testes automatizados.
+
+**Responsavel:** P3 - Geracao.
+
+### Problema identificado
+
+A implementacao anterior validava citacoes apenas quando
+o status da resposta era `respondida`.
+
+Uma resposta classificada como `evidencias_insuficientes`
+ou `fora_do_escopo` poderia apresentar marcadores ou
+documentos inexistentes sem ser rejeitada.
+
+### Decisao
+
+Aplicar a validacao de citacoes estruturadas tambem
+aos estados de recusa.
+
+Manter a possibilidade de recusar uma pergunta sem
+apresentar fontes, desde que nenhuma citacao invalida
+seja fornecida.
+
+### Implementacao
+
+Arquivo alterado: `src/generation/resposta.py`.
+
+- Respostas com status `respondida` continuam utilizando
+  as validacoes implementadas na D018.
+- Respostas com outros status tambem passam pela
+  verificacao de citacoes.
+- Marcadores inexistentes, IDs divergentes e trechos
+  invalidos resultam em `erro_operacional`.
+- Recusas legitimas sem fontes continuam permitidas.
+
+### Testes de regressao
+
+Arquivo alterado: `tests/test_resposta.py`.
+
+Foram adicionados tres testes:
+
+1. Insuficiencia de evidencias com fonte inventada.
+2. Fora do escopo com fonte inventada.
+3. Recusa legitima sem fontes.
+
+### Resultados
+
+Antes da correcao:
+- 18 testes de resposta executados.
+- 16 aprovados.
+- 2 falhas esperadas.
+
+Apos a correcao:
+- 18/18 testes de resposta aprovados.
+- 38/38 testes da suite completa aprovados.
+- `git diff --check` sem problemas na verificacao final.
+
+### Limitacoes
+
+A validacao confirma consistencia estrutural das citacoes,
+mas nao comprova fidelidade semantica.
+
+Marcadores presentes exclusivamente no texto livre da
+resposta ainda nao sao verificados por esta alteracao.
+
+O comportamento com o Qwen real e os casos de avaliacao
+da P1 ainda precisa ser validado.
+
+### Proxima atividade
+
+P3.3B - Tratamento de perguntas fora do escopo
+e de evidencias insuficientes.

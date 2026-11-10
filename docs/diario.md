@@ -546,3 +546,38 @@ pelo limite de tokens.
 **Decisao relacionada:** D019.
 
 **Proxima atividade:** P3.3 - escopo e abstencao.
+
+
+## 10/11/2026 - P3.3A: validacao das citacoes em recusas
+
+**Objetivo:** impedir que o RAG aceite citacoes
+inventadas em respostas de recusa.
+
+**Procedimento:**
+1. Criacao de tres testes de regressao.
+2. Execucao inicial dos testes.
+3. Confirmacao de duas falhas esperadas.
+4. Correcao da validacao em gerar_resposta().
+5. Nova execucao dos testes de resposta.
+6. Execucao da suite completa.
+7. Correcao de whitespace e verificacao com Git.
+
+**Resultados:**
+- Testes especificos de resposta: 18/18 aprovados.
+- Suite completa: 38/38 aprovados.
+- git diff --check: sem problemas na ultima execucao.
+
+**Conclusao:**
+O sistema rejeita citacoes estruturadas inexistentes
+tambem em respostas classificadas como recusa.
+
+Recusas legitimas sem fontes continuam permitidas.
+
+**Limitacao:**
+Ainda nao foi avaliada a escolha correta entre
+respondida, evidencias_insuficientes e fora_do_escopo
+em execucoes reais.
+
+**Decisao relacionada:** D020.
+
+**Proxima atividade:** P3.3B - escopo e abstencao.
