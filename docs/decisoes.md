@@ -819,3 +819,31 @@ ainda precisa ser avaliada.
 Validar abstencao por evidencias insuficientes,
 testar perguntas adversariais e integrar os
 casos de desenvolvimento preparados pela P1.
+
+## D022 - Integracao P1/P2/P3 para avaliacao controlada (10/11/2026)
+
+**Decisao:** integrar o conjunto de desenvolvimento da P1 ao executor RAG da P2/P3, preservando a separacao entre recuperacao_e_geracao e contexto_controlado.
+
+**Motivo:** os casos controlados devem receber exclusivamente as evidencias fixadas pela P1. Executar recuperacao vetorial nesses casos alteraria as condicoes do teste e comprometeria a comparabilidade dos resultados.
+
+**Implementacao:**
+- O carregador aceita os identificadores `id` (P1) e `case_id` (P2).
+- O modo `recuperacao_e_geracao` preserva o fluxo normal do RAG.
+- O modo `contexto_controlado` fornece as fixtures diretamente ao gerador, sem consultar o ChromaDB.
+- Contextos obrigatorios ausentes produzem `erro_operacional`.
+- Contextos declarados intencionalmente vazios produzem `evidencias_insuficientes`, sem consultar o recuperador ou o gerador.
+- A CLI aceita `--id` e `--fixtures`, permitindo executar casos individuais.
+- Os resultados locais sao ignorados pelo Git.
+- Somente o conjunto de desenvolvimento da P1 foi incorporado. O conjunto reservado permanece fora dos ajustes.
+
+**Validacao:**
+- 56 testes automatizados aprovados.
+- `git diff --check` sem erros.
+- Caso I01 executado pelo executor integrado.
+- I01 retornou `evidencias_insuficientes`, com `retrieved_ids`, `context_ids` e `citacoes` vazios.
+- A mensagem foi ajustada para informar ausencia de evidencias no contexto fornecido, sem afirmar que houve busca vetorial.
+- O verificador P1 aceitou a primeira predicao I01: status correspondente ao gabarito e nenhum erro estrutural.
+
+**Limitacoes:** I01 foi uma execucao deterministica, sem inferencia do Qwen. A origem `fixture_sintetica` utilizada na revisao nao deve ser interpretada como geracao sintetica da resposta ou execucao do modelo. Os testes automatizados e a revisao estrutural nao comprovam a fidelidade semantica de respostas produzidas pelo Qwen.
+
+**Conferencia futura:** executar I02 com modelo real; avaliar A01/A02 quanto a prompt injection; avaliar os casos com recuperacao; revisar evidencias, citacoes, latencia e falhas operacionais. Manter os casos reservados separados da etapa de ajustes.
