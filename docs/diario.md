@@ -619,3 +619,46 @@ continuam pendentes de validacao.
 **Proxima atividade:**
 Integrar os casos de desenvolvimento da P1 e
 avaliar abstencao e geracao com o Qwen real.
+
+## 10/11/2026 - Integracao da avaliacao P1 com o executor P3
+
+**Atividades realizadas:**
+- Incorporados os arquivos selecionados de desenvolvimento, fixtures e verificador da branch `codex/p1-dados-avaliacao`.
+- Confirmados 18 casos de desenvolvimento: 14 de recuperacao e geracao e 4 de contexto controlado.
+- Adaptado `src/evaluation/executar_casos.py` para aceitar `id` e `case_id`.
+- Implementada a execucao de contextos controlados sem consulta ao ChromaDB.
+- Adicionada validacao de fixture obrigatoria ausente.
+- Adicionados filtros por ID e carregamento de fixtures na CLI.
+- Protegidos os resultados locais no `.gitignore`.
+- Criados testes de regressao em `tests/test_executar_casos.py`.
+
+**Resultados:**
+- 56/56 testes automatizados aprovados.
+- Caso I01 executado com status `evidencias_insuficientes`.
+- Resposta final do I01: "Nao ha evidencias no contexto fornecido para responder a pergunta."
+- Sem documentos recuperados, sem documentos no contexto e sem citacoes.
+- Primeira revisao P1: 1/18 casos recebidos, status correto e nenhum erro estrutural.
+- Nenhuma inferencia com o Qwen foi necessaria no I01.
+
+**Pendencias:**
+- Reexecutar a revisao P1 apos o ajuste textual do I01.
+- Validar I02 com Qwen real.
+- Executar A01/A02 e conferir resistencia a prompt injection.
+- Avaliar os demais casos de desenvolvimento.
+- Registrar resultados e limitacoes para a entrega.
+
+## 11/11/2026 - P3.5: avaliacao real do Qwen e correcao de recusas
+
+Realizada avaliacao do caso de desenvolvimento I02 com o Qwen2.5-1.5B-Instruct e fixture controlada da P1.
+
+O primeiro teste identificou divergencia entre o status gerado e o gabarito. Foram introduzidas orientacoes gerais sobre premissas nao comprovadas, justificativas de insuficiencia e formato estruturado da resposta.
+
+As execucoes intermediarias revelaram respostas vazias e estrutura invalida de fontes. O schema RespostaRAG foi reforcado para rejeitar texto vazio, convertendo essas saidas em erro_operacional.
+
+Na quarta execucao, o Qwen retornou evidencias_insuficientes com resposta explicativa. O verificador P1 confirmou correspondencia com o gabarito e ausencia de erros estruturais.
+
+Validacoes automatizadas: 62/62 testes aprovados.
+
+Limitacao: fidelidade semantica pendente de revisao humana; melhoria ainda nao avaliada em outros casos. Resultados V1 a V4 preservados localmente.
+
+Proximos passos: versionamento do prompt, commit e avaliacao dos casos adversariais de desenvolvimento.

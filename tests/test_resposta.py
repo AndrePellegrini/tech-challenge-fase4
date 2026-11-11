@@ -6,6 +6,7 @@ import unittest
 
 from src.generation.resposta import Status, construir_prompt, gerar_resposta, validar_citacoes, RespostaRAG
 from src.retrieval.tipos import Evidencia
+from pydantic import ValidationError
 
 
 class GeradorFalso:
@@ -352,6 +353,50 @@ class TestGerarResposta(unittest.TestCase):
             resposta.status,
             Status.EVIDENCIAS_INSUFICIENTES,
         )
+
+    def test_schema_rejeita_resposta_vazia(self):
+        """O contrato nao pode aceitar respostas sem texto."""
+
+        for texto in ("", "   ", "\n\t"):
+            with self.subTest(texto=repr(texto)):
+                dados = {
+                    "status": "evidencias_insuficientes",
+                    "resposta": texto,
+                    "afirmacoes": [],
+                    "fontes": [],
+                }
+
+                with self.assertRaises(ValidationError):
+                    RespostaRAG.model_validate(dados)
+
+    def test_geracao_com_resposta_vazia_vira_erro_operacional(self):
+        """Uma falha de geracao nao pode virar recusa correta."""
+
+        evidencias = [_evidencia()]
+
+        saida = json.dumps({
+            "status": "evidencias_insuficientes",
+            "resposta": "",
+            "afirmacoes": [],
+            "fontes": [],
+        })
+
+        gerador = GeradorFalso(saida)
+
+        resultado = gerar_resposta(
+            "Qual foi o motivo do cancelamento?",
+            evidencias,
+            gerador,
+        )
+
+        self.assertEqual(
+            resultado.status,
+            Status.ERRO_OPERACIONAL,
+        )
+
+        self.assertTrue(resultado.resposta.strip())
+        self.assertIn("resposta", resultado.resposta.lower())
+
 
 if __name__ == "__main__":
     unittest.main()

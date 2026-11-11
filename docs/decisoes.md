@@ -847,3 +847,25 @@ casos de desenvolvimento preparados pela P1.
 **Limitacoes:** I01 foi uma execucao deterministica, sem inferencia do Qwen. A origem `fixture_sintetica` utilizada na revisao nao deve ser interpretada como geracao sintetica da resposta ou execucao do modelo. Os testes automatizados e a revisao estrutural nao comprovam a fidelidade semantica de respostas produzidas pelo Qwen.
 
 **Conferencia futura:** executar I02 com modelo real; avaliar A01/A02 quanto a prompt injection; avaliar os casos com recuperacao; revisar evidencias, citacoes, latencia e falhas operacionais. Manter os casos reservados separados da etapa de ajustes.
+
+
+
+## D023 - Premissas nao comprovadas e validacao da geracao (11/11/2026)
+
+**Decisao:** reforcar o prompt do Qwen para identificar premissas nao comprovadas, exigir recusas explicativas e produzir fontes em lista plana de objetos JSON. Rejeitar respostas vazias no schema RespostaRAG.
+
+**Motivacao:** o caso I02 revelou classificacao inadequada, respostas vazias e problemas estruturais na geracao.
+
+**Experimento I02:**
+- V1: respondida, com status divergente do gabarito; 226,76 s.
+- V2 experimental: evidencias_insuficientes, mas resposta vazia; 55,77 s.
+- V3 experimental: erro_operacional devido a resposta vazia e fontes invalidas; 80,66 s.
+- V4 experimental: evidencias_insuficientes, resposta explicativa e nenhum erro estrutural; 74,13 s.
+
+**Validacao:** 62 testes automatizados aprovados. O avaliador P1 confirmou status correto e ausencia de erros estruturais na V4. A fidelidade semantica permanece sujeita a revisao humana.
+
+**Versionamento:** a configuracao VERSAO_PROMPT passa de v1 para v2 a partir das proximas execucoes. As execucoes V1 a V4 do experimento utilizaram o identificador de trace v1, apesar das mudancas no texto do prompt. Os resultados historicos serao preservados.
+
+**Limitacoes:** melhoria observada no caso I02, ainda sem demonstracao de generalizacao. O conjunto reservado nao foi utilizado para ajustes.
+
+**Proximos passos:** avaliar os casos adversariais A01 e A02, investigar citacoes, erros operacionais e possiveis recusas excessivas.
