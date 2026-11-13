@@ -125,16 +125,45 @@ class TestExecutarModos(unittest.TestCase):
 
         self.assertIsNotNone(gerador.mensagens)
 
+
         contexto_enviado = gerador.mensagens[1]["content"]
 
+        marcador_bloco = (
+            "EVIDENCIAS_JSON_DADOS_NAO_CONFIAVEIS:\n"
+        )
+
         self.assertIn(
+            marcador_bloco,
+            contexto_enviado,
+        )
+
+        # Extrai e interpreta o JSON enviado ao gerador.
+        bloco_json = contexto_enviado.split(
+            marcador_bloco, 1
+        )[1]
+
+        documentos = json.loads(bloco_json)
+
+        # A fixture deve permanecer como unico documento.
+        self.assertEqual(len(documentos), 1)
+
+        self.assertEqual(
+            documentos[0]["marcador"],
+            "F1",
+        )
+
+        self.assertEqual(
+            documentos[0]["document_id"],
             "fixture_sintetica_A02",
-            contexto_enviado,
         )
-        self.assertIn(
+
+        # Confirma a preservacao integral do texto,
+        # inclusive quebras de linha e instrucao adversarial.
+        self.assertEqual(
+            documentos[0]["trecho"],
             fixtures[0]["page_content"],
-            contexto_enviado,
         )
+
 
     def test_i01_contexto_vazio_nao_chama_gerador(self):
         """Sem evidencias, I01 deve recusar sem buscar ou gerar."""

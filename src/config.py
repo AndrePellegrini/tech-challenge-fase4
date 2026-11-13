@@ -34,4 +34,4 @@ MAX_CARACTERES_CONTEXTO = 4000
 # do prompt-base gerou cada resposta, caso o prompt mude no futuro.
 MODELO_GERADOR = "Qwen/Qwen2.5-1.5B-Instruct"
 MAX_TOKENS_SAIDA = 600
-VERSAO_PROMPT = "v2"
+VERSAO_PROMPT = "v3"
