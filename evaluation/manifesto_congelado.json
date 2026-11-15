@@ -1,0 +1,31 @@
+{
+  "versao": "1.0.0",
+  "data": "2026-11-07",
+  "corpus_sha256": "3519b8a9653c35c386d43959663beb4a9ee804f425a4568b7aac082c458043ce",
+  "python": "3.12.14",
+  "split": "18 desenvolvimento / 12 reservado, fixado antes de ajustar modelos",
+  "composicao": {
+    "desenvolvimento": {
+      "respondível": 12,
+      "insuficiente": 2,
+      "fora_escopo": 2,
+      "adversarial": 2
+    },
+    "teste_reservado": {
+      "respondível": 8,
+      "insuficiente": 2,
+      "fora_escopo": 1,
+      "adversarial": 1
+    }
+  },
+  "arquivos_sha256": {
+    "desenvolvimento/perguntas.jsonl": "64a69d3557de0532c4f9bbe49257d39e70cfc83d3d29fd27a220bac161137e60",
+    "desenvolvimento/gabarito.jsonl": "caa0b71878786a3e76c4a7138d03391d590f4b9b17a6f736b43b1487308eca92",
+    "teste_reservado/perguntas.jsonl": "ea9528c7b84c78db40a70c5faf6835e48d24943a77bb61ddb21f61265c373b99",
+    "teste_reservado/gabarito.jsonl": "b6df8096f52795659360b090ab7f7d44ab98ceb635fcd993ae7f0ce04cbdce83",
+    "fixtures/contextos.jsonl": "4078a3810990dd73521c394974af2628b6e2c97b71277cde7c09739cdaac3b84"
+  },
+  "evidencias_identicas_entre_splits": 0,
+  "revisao_humana": "pendente",
+  "modelo_executado": false
+}

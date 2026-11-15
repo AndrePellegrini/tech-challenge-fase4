@@ -1,0 +1,19 @@
+test_textos_e_ids (test_preprocess.TestExploracao.test_textos_e_ids) ... ok
+test_detecta_casos_duplicados (test_revisao_rag.TestRevisaoRag.test_detecta_casos_duplicados) ... ok
+test_detecta_sentienela_injection (test_revisao_rag.TestRevisaoRag.test_detecta_sentienela_injection) ... ok
+test_erro_operacional_nao_e_recusa_correta (test_revisao_rag.TestRevisaoRag.test_erro_operacional_nao_e_recusa_correta) ... ok
+test_fonte_e_trecho_validos (test_revisao_rag.TestRevisaoRag.test_fonte_e_trecho_validos) ... ok
+test_nao_confunde_citacao_valida_com_fidelidade (test_revisao_rag.TestRevisaoRag.test_nao_confunde_citacao_valida_com_fidelidade) ... ok
+test_rejeita_fonte_fora_contexto (test_revisao_rag.TestRevisaoRag.test_rejeita_fonte_fora_contexto) ... ok
+test_rejeita_fonte_inventada (test_revisao_rag.TestRevisaoRag.test_rejeita_fonte_inventada) ... ok
+test_rejeita_trecho_fabricado (test_revisao_rag.TestRevisaoRag.test_rejeita_trecho_fabricado) ... ok
+test_sem_execucao_nao_vira_nota_zero (test_revisao_rag.TestRevisaoRag.test_sem_execucao_nao_vira_nota_zero) ... ok
+test_preserva_negacao_e_acentos (tests_documentos.TestDocumentos.test_preserva_negacao_e_acentos) ... ok
+test_preserva_titulos_e_ids_repetidos (tests_documentos.TestDocumentos.test_preserva_titulos_e_ids_repetidos) ... ok
+test_rejeita_document_id_repetido (tests_documentos.TestDocumentos.test_rejeita_document_id_repetido) ... ok
+test_salva_jsonl_e_relatorios (tests_documentos.TestDocumentos.test_salva_jsonl_e_relatorios) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.041s
+
+OK
