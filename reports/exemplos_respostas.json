@@ -1,0 +1,1495 @@
+{
+  "data_execucao": "2026-11-15",
+  "ambiente": {
+    "python": "3.12.10",
+    "sistema": "Windows-11-10.0.22621-SP0",
+    "dispositivo": "CPU"
+  },
+  "configuracao": {
+    "modelo_embeddings": "intfloat/multilingual-e5-small",
+    "colecao": "olist_e5_full_42687_v1",
+    "modelo_gerador": "Qwen/Qwen2.5-1.5B-Instruct",
+    "versao_prompt": "v3-adaptativo-p311",
+    "top_k_candidatos": 50,
+    "max_documentos_contexto": 8,
+    "max_caracteres_contexto": 4000,
+    "max_tokens_saida": 600
+  },
+  "exemplos": [
+    {
+      "id": "E01",
+      "categoria": "Investigacao de reclamacoes",
+      "pergunta": "Quais são os principais problemas relatados pelos clientes em suas avaliações?",
+      "tempo_segundos": 146.7,
+      "resultado": {
+        "status": "respondida",
+        "resposta": "De acordo com as avaliações dos clientes, alguns dos principais problemas relatados incluem demora na entrega, falta de informações claras sobre o status do pedido, falta de resolução eficaz dos problemas reportados, e falta de atendimento personalizado.",
+        "afirmacoes": [
+          {
+            "texto": "Demora na entrega é um problema frequentemente relatado.",
+            "fontes": [
+              "F1",
+              "F5",
+              "F6"
+            ]
+          },
+          {
+            "texto": "Lack of clear information about the order status is also mentioned by customers.",
+            "fontes": [
+              "F1",
+              "F2",
+              "F8"
+            ]
+          },
+          {
+            "texto": "Ineffective resolution to reported problems is highlighted in several reviews.",
+            "fontes": [
+              "F1",
+              "F2",
+              "F3",
+              "F4"
+            ]
+          },
+          {
+            "texto": "Insufficient personalized customer service is noted.",
+            "fontes": [
+              "F7"
+            ]
+          }
+        ],
+        "fontes": [
+          {
+            "marcador": "F1",
+            "document_id": "olist_review_row_000949",
+            "trecho": "Comentario: Atenciosos,ligam para dar acompanhamento. Bom prazo de validade. Demorou de chegar. Agora é verificar a qualidade do produto."
+          },
+          {
+            "marcador": "F5",
+            "document_id": "olist_review_row_002345",
+            "trecho": "Titulo: Informação\\preocupada\nComentario: Minha avaliação ta sendo esta pq aqui aparece q recebi o produto e ainda não chegou em casa.Por favor, queria saber o q está acontecendo ??? Atenciosamente, Juliana"
+          },
+          {
+            "marcador": "F6",
+            "document_id": "olist_review_row_037364",
+            "trecho": "Comentario: Solicitei cancelamento e estou aguardando o retorno. Não entendi porque estão me enviando essa avaliação..."
+          },
+          {
+            "marcador": "F2",
+            "document_id": "olist_review_row_090071",
+            "trecho": "Comentario: Sou cliente e essa é a primeira vez que houve problemas, até o momento não recebi a mercadoria. Aguardo retorno urgente!!"
+          },
+          {
+            "marcador": "F8",
+            "document_id": "olist_review_row_028468",
+            "trecho": "Comentario: Gostaria de saber a quem e como reclamar para receber o produto correto. Grata."
+          },
+          {
+            "marcador": "F3",
+            "document_id": "olist_review_row_013810",
+            "trecho": "Comentario: Estou há mais de 01 mês esperando a solução do problema conforme atendimento aberto . Quanto tempo mais terei que aguardar ? Tenho que buscar ajuda no procon ou juizados de pequenas causas ??"
+          },
+          {
+            "marcador": "F4",
+            "document_id": "olist_review_row_088507",
+            "trecho": "Comentario: Só posso fazer avaliação depois que receber o meu produto!!! No momento todas as respostas são negativa"
+          },
+          {
+            "marcador": "F7",
+            "document_id": "olist_review_row_016802",
+            "trecho": "Comentario: Total falta de respeito com o consumidor. Além de não realizar a entrega que tinha um prazo enorme, ao longo do período, pedi mais detalhes do status para acompanhar o processo e nunca ligaram."
+          }
+        ],
+        "retrieved_ids": [
+          "olist_review_row_000949",
+          "olist_review_row_090071",
+          "olist_review_row_013810",
+          "olist_review_row_088507",
+          "olist_review_row_002345",
+          "olist_review_row_037364",
+          "olist_review_row_016802",
+          "olist_review_row_028468",
+          "olist_review_row_056783",
+          "olist_review_row_024185",
+          "olist_review_row_000689",
+          "olist_review_row_005509",
+          "olist_review_row_085568",
+          "olist_review_row_073851",
+          "olist_review_row_087532",
+          "olist_review_row_067156",
+          "olist_review_row_004240",
+          "olist_review_row_025446",
+          "olist_review_row_066605",
+          "olist_review_row_044417",
+          "olist_review_row_087821",
+          "olist_review_row_087991",
+          "olist_review_row_056696",
+          "olist_review_row_065420",
+          "olist_review_row_092443",
+          "olist_review_row_020246",
+          "olist_review_row_061840",
+          "olist_review_row_036894",
+          "olist_review_row_001279",
+          "olist_review_row_044498",
+          "olist_review_row_022398",
+          "olist_review_row_088829",
+          "olist_review_row_040508",
+          "olist_review_row_055042",
+          "olist_review_row_038811",
+          "olist_review_row_007011",
+          "olist_review_row_025545",
+          "olist_review_row_041674",
+          "olist_review_row_053395",
+          "olist_review_row_079039",
+          "olist_review_row_062298",
+          "olist_review_row_060378",
+          "olist_review_row_075553",
+          "olist_review_row_083138",
+          "olist_review_row_033560",
+          "olist_review_row_016488",
+          "olist_review_row_077334",
+          "olist_review_row_067036",
+          "olist_review_row_008814",
+          "olist_review_row_036454"
+        ],
+        "context_ids": [
+          "olist_review_row_000949",
+          "olist_review_row_090071",
+          "olist_review_row_013810",
+          "olist_review_row_088507",
+          "olist_review_row_002345",
+          "olist_review_row_037364",
+          "olist_review_row_016802",
+          "olist_review_row_028468"
+        ]
+      }
+    },
+    {
+      "id": "E02",
+      "categoria": "Investigacao de um tema especifico",
+      "pergunta": "O que os clientes relatam sobre problemas relacionados à entrega?",
+      "tempo_segundos": 146.3,
+      "resultado": {
+        "status": "respondida",
+        "resposta": "Os clientes relatam problemas de entrega, incluindo atrasos, falta de informações sobre o status e problemas na entrega dos produtos.",
+        "afirmacoes": [
+          {
+            "texto": "Comentários de clientes indicam atrasos na entrega.",
+            "fontes": [
+              "F2",
+              "F3",
+              "F4",
+              "F5",
+              "F6",
+              "F7",
+              "F8"
+            ]
+          },
+          {
+            "texto": "Clientes relatam falta de informações sobre o status da entrega.",
+            "fontes": [
+              "F2",
+              "F3",
+              "F4",
+              "F5",
+              "F6",
+              "F7",
+              "F8"
+            ]
+          },
+          {
+            "texto": "Alguns clientes relatam problemas específicos durante a entrega.",
+            "fontes": [
+              "F2",
+              "F3",
+              "F4",
+              "F5",
+              "F6",
+              "F7",
+              "F8"
+            ]
+          }
+        ],
+        "fontes": [
+          {
+            "marcador": "F2",
+            "document_id": "olist_review_row_012144",
+            "trecho": "Comentario: Atraso na entrega"
+          },
+          {
+            "marcador": "F3",
+            "document_id": "olist_review_row_081354",
+            "trecho": "Comentario: Foi falado que houve problemas na entrega mas não falava o que e nem como seria resolvido. Me causou uma preocupação e frustração desnecessária já que o mesmo chegou antes do prazo estipulado."
+          },
+          {
+            "marcador": "F4",
+            "document_id": "olist_review_row_007572",
+            "trecho": "Comentario: demora na entrega"
+          },
+          {
+            "marcador": "F5",
+            "document_id": "olist_review_row_049598",
+            "trecho": "Comentario: Tive problemas com a entrega. E ainda não mandaram todos os produtos!"
+          },
+          {
+            "marcador": "F6",
+            "document_id": "olist_review_row_065820",
+            "trecho": "Comentario: Primeiro marcaram uma data e nao cumpriram depois disseram ter dificuldade na entrega quando recebemos pelo menos 50 encomendas por dia"
+          },
+          {
+            "marcador": "F7",
+            "document_id": "olist_review_row_091805",
+            "trecho": "Comentario: TERRIVEL ESTE PROBLEMA DA ENTREGA"
+          },
+          {
+            "marcador": "F8",
+            "document_id": "olist_review_row_044788",
+            "trecho": "Titulo: produto nao entregue\nComentario: recebi um email das lannister informando que haviam problemas na distribuicao, e agora outro perguntando se recebi a compra o que ate o momento nao aconteceu, nao sei o que aconteceu ou a que atribu"
+          }
+        ],
+        "retrieved_ids": [
+          "olist_review_row_016802",
+          "olist_review_row_012144",
+          "olist_review_row_074721",
+          "olist_review_row_081354",
+          "olist_review_row_007572",
+          "olist_review_row_049598",
+          "olist_review_row_065820",
+          "olist_review_row_091805",
+          "olist_review_row_044788",
+          "olist_review_row_094900",
+          "olist_review_row_038961",
+          "olist_review_row_096126",
+          "olist_review_row_086989",
+          "olist_review_row_079039",
+          "olist_review_row_096517",
+          "olist_review_row_054806",
+          "olist_review_row_063015",
+          "olist_review_row_012884",
+          "olist_review_row_020799",
+          "olist_review_row_043921",
+          "olist_review_row_053859",
+          "olist_review_row_087821",
+          "olist_review_row_004281",
+          "olist_review_row_007031",
+          "olist_review_row_020359",
+          "olist_review_row_096916",
+          "olist_review_row_047766",
+          "olist_review_row_081169",
+          "olist_review_row_023209",
+          "olist_review_row_081391",
+          "olist_review_row_090990",
+          "olist_review_row_096193",
+          "olist_review_row_000689",
+          "olist_review_row_033500",
+          "olist_review_row_055226",
+          "olist_review_row_009835",
+          "olist_review_row_050826",
+          "olist_review_row_076094",
+          "olist_review_row_095177",
+          "olist_review_row_095849",
+          "olist_review_row_076289",
+          "olist_review_row_017712",
+          "olist_review_row_088884",
+          "olist_review_row_096510",
+          "olist_review_row_099012",
+          "olist_review_row_086894",
+          "olist_review_row_033560",
+          "olist_review_row_070164",
+          "olist_review_row_067359",
+          "olist_review_row_045179"
+        ],
+        "context_ids": [
+          "olist_review_row_016802",
+          "olist_review_row_012144",
+          "olist_review_row_081354",
+          "olist_review_row_007572",
+          "olist_review_row_049598",
+          "olist_review_row_065820",
+          "olist_review_row_091805",
+          "olist_review_row_044788"
+        ]
+      }
+    },
+    {
+      "id": "E03",
+      "categoria": "Busca por experiencias positivas",
+      "pergunta": "Quais aspectos da experiência de compra são mais elogiados pelos clientes?",
+      "tempo_segundos": 151.7,
+      "resultado": {
+        "status": "respondida",
+        "resposta": "Os clientes elogiam principalmente a qualidade dos produtos, a rapidez da entrega, a eficiência do atendimento e a confiabilidade das lojas.",
+        "afirmacoes": [
+          {
+            "texto": "Os clientes elogiam a qualidade dos produtos.",
+            "fontes": [
+              "F1",
+              "F3",
+              "F7"
+            ]
+          },
+          {
+            "texto": "Os clientes elogiam a rapidez da entrega.",
+            "fontes": [
+              "F1",
+              "F2",
+              "F5",
+              "F6"
+            ]
+          },
+          {
+            "texto": "Os clientes elogiam a eficiência do atendimento.",
+            "fontes": [
+              "F1",
+              "F2",
+              "F3",
+              "F4",
+              "F5",
+              "F6",
+              "F7"
+            ]
+          },
+          {
+            "texto": "Os clientes elogiam a confiabilidade das lojas.",
+            "fontes": [
+              "F1",
+              "F2",
+              "F3",
+              "F4",
+              "F5",
+              "F6",
+              "F7"
+            ]
+          }
+        ],
+        "fontes": [
+          {
+            "marcador": "F1",
+            "document_id": "olist_review_row_028879",
+            "trecho": "Comentario: excelente experiência de compra. Obrigado"
+          },
+          {
+            "marcador": "F3",
+            "document_id": "olist_review_row_026046",
+            "trecho": "Comentario: Lojas ótimas e de confiança. Recomendo sim. Compro a anos e é de confiança. Obrigada pelo atendimentos e a atenção."
+          },
+          {
+            "marcador": "F7",
+            "document_id": "olist_review_row_092448",
+            "trecho": "Comentario: Adorei a compra. Farei mais compras futuramente. Com certeza."
+          },
+          {
+            "marcador": "F2",
+            "document_id": "olist_review_row_080308",
+            "trecho": "Comentario: Fiquei muito feliz pela compra / atendimento e a entrega q foi bem antes do previsto tanto q no mesmo dia incentivei minha mãe tbm comprar com vcs. Estão de parabéns ! Ganharam fiéis clientes !"
+          },
+          {
+            "marcador": "F5",
+            "document_id": "olist_review_row_092003",
+            "trecho": "Comentario: Com relação à compra e entrega, só tenho a elogiar. Muito obrigada!"
+          },
+          {
+            "marcador": "F6",
+            "document_id": "olist_review_row_016833",
+            "trecho": "Comentario: É impressionante o respeito, consideração, tratamento e agilidade pela entrega da mercadoria ao consumidor dado pelo stark, só me resta agradecer e reconhecer estes valores. Obrigado."
+          },
+          {
+            "marcador": "F4",
+            "document_id": "olist_review_row_058615",
+            "trecho": "Comentario: Foi maravilhosa minha experiência com a loja! Chegou bem antes da data prevista, não teria como ficar mais contente. Muito obrigada 😁👍🏻"
+          }
+        ],
+        "retrieved_ids": [
+          "olist_review_row_028879",
+          "olist_review_row_080308",
+          "olist_review_row_026046",
+          "olist_review_row_058615",
+          "olist_review_row_092003",
+          "olist_review_row_016833",
+          "olist_review_row_092448",
+          "olist_review_row_019659",
+          "olist_review_row_071580",
+          "olist_review_row_017828",
+          "olist_review_row_006814",
+          "olist_review_row_040675",
+          "olist_review_row_091022",
+          "olist_review_row_093548",
+          "olist_review_row_027741",
+          "olist_review_row_030020",
+          "olist_review_row_012721",
+          "olist_review_row_004020",
+          "olist_review_row_053362",
+          "olist_review_row_049803",
+          "olist_review_row_065597",
+          "olist_review_row_028206",
+          "olist_review_row_060903",
+          "olist_review_row_023436",
+          "olist_review_row_053378",
+          "olist_review_row_036546",
+          "olist_review_row_019651",
+          "olist_review_row_023396",
+          "olist_review_row_001500",
+          "olist_review_row_022129",
+          "olist_review_row_095556",
+          "olist_review_row_042324",
+          "olist_review_row_025502",
+          "olist_review_row_085674",
+          "olist_review_row_006909",
+          "olist_review_row_053110",
+          "olist_review_row_033612",
+          "olist_review_row_036316",
+          "olist_review_row_047422",
+          "olist_review_row_092747",
+          "olist_review_row_086343",
+          "olist_review_row_055770",
+          "olist_review_row_012233",
+          "olist_review_row_083517",
+          "olist_review_row_079628",
+          "olist_review_row_032033",
+          "olist_review_row_041850",
+          "olist_review_row_093022",
+          "olist_review_row_082793",
+          "olist_review_row_046047"
+        ],
+        "context_ids": [
+          "olist_review_row_028879",
+          "olist_review_row_080308",
+          "olist_review_row_026046",
+          "olist_review_row_058615",
+          "olist_review_row_092003",
+          "olist_review_row_016833",
+          "olist_review_row_092448",
+          "olist_review_row_019659"
+        ]
+      }
+    },
+    {
+      "id": "E04",
+      "categoria": "Exploracao baseada em evidencias",
+      "pergunta": "Quais avaliações sustentam a conclusão de que existem problemas recorrentes relacionados ao prazo de entrega?",
+      "tempo_segundos": 138.1,
+      "resultado": {
+        "status": "respondida",
+        "resposta": "De acordo com as evidências fornecidas, há avaliações que indicam problemas recorrentes relacionados ao prazo de entrega. As avaliações com notas baixas (F2, F6) e aquelas que mencionam dificuldades para cumprir o prazo (F1, F3, F7) sugerem que existem problemas consistentes em relação à entrega dentro dos prazos estabelecidos.",
+        "afirmacoes": [
+          {
+            "texto": "Existem avaliações com notas baixas referentes ao prazo de entrega.",
+            "fontes": [
+              "F2",
+              "F6"
+            ]
+          },
+          {
+            "texto": "Há avaliações que mencionam dificuldades para cumprir o prazo de entrega.",
+            "fontes": [
+              "F1",
+              "F3",
+              "F7"
+            ]
+          }
+        ],
+        "fontes": [
+          {
+            "marcador": "F2",
+            "document_id": "olist_review_row_075527",
+            "trecho": "Comentario: Ñ compriu seu prazo de entrega"
+          },
+          {
+            "marcador": "F6",
+            "document_id": "olist_review_row_099061",
+            "trecho": "Comentario: Esperava que eles cumprisse o prazo da entrega"
+          },
+          {
+            "marcador": "F1",
+            "document_id": "olist_review_row_023217",
+            "trecho": "Comentario: o que mata é o prazo da entrega!"
+          },
+          {
+            "marcador": "F3",
+            "document_id": "olist_review_row_077102",
+            "trecho": "Comentario: Achei vwue o prazo de entrega nåo foi respeitado."
+          },
+          {
+            "marcador": "F7",
+            "document_id": "olist_review_row_052263",
+            "trecho": "Comentario: O produto chegou entes do prazo de entrega. Recomendo."
+          }
+        ],
+        "retrieved_ids": [
+          "olist_review_row_023217",
+          "olist_review_row_075527",
+          "olist_review_row_077102",
+          "olist_review_row_074756",
+          "olist_review_row_006815",
+          "olist_review_row_099061",
+          "olist_review_row_052263",
+          "olist_review_row_065640",
+          "olist_review_row_085907",
+          "olist_review_row_038226",
+          "olist_review_row_085472",
+          "olist_review_row_020376",
+          "olist_review_row_068363",
+          "olist_review_row_082091",
+          "olist_review_row_074018",
+          "olist_review_row_097272",
+          "olist_review_row_037593",
+          "olist_review_row_065502",
+          "olist_review_row_049607",
+          "olist_review_row_017886",
+          "olist_review_row_090784",
+          "olist_review_row_014672",
+          "olist_review_row_001982",
+          "olist_review_row_015995",
+          "olist_review_row_001822",
+          "olist_review_row_041549",
+          "olist_review_row_056287",
+          "olist_review_row_077112",
+          "olist_review_row_022397",
+          "olist_review_row_076396",
+          "olist_review_row_084653",
+          "olist_review_row_060589",
+          "olist_review_row_032146",
+          "olist_review_row_098383",
+          "olist_review_row_023646",
+          "olist_review_row_074886",
+          "olist_review_row_017955",
+          "olist_review_row_071335",
+          "olist_review_row_041327",
+          "olist_review_row_098415",
+          "olist_review_row_086449",
+          "olist_review_row_012501",
+          "olist_review_row_013907",
+          "olist_review_row_012616",
+          "olist_review_row_071634",
+          "olist_review_row_063291",
+          "olist_review_row_056416",
+          "olist_review_row_026775",
+          "olist_review_row_003143",
+          "olist_review_row_040615"
+        ],
+        "context_ids": [
+          "olist_review_row_023217",
+          "olist_review_row_075527",
+          "olist_review_row_077102",
+          "olist_review_row_074756",
+          "olist_review_row_006815",
+          "olist_review_row_099061",
+          "olist_review_row_052263",
+          "olist_review_row_065640"
+        ]
+      }
+    },
+    {
+      "id": "E05",
+      "categoria": "Qualidade dos produtos",
+      "pergunta": "Existem padrões recorrentes nas avaliações relacionadas à qualidade dos produtos?",
+      "tempo_segundos": 140.9,
+      "resultado": {
+        "status": "respondida",
+        "resposta": "Sim, existem padrões recorrentes nas avaliações da Olist referentes à qualidade dos produtos. As avaliações mais frequentes incluem reclamações sobre entrega tardia, falta de informações sobre o produto antes da compra, e comentários negativos em relação à qualidade do produto. Algumas avaliações também indicam que alguns clientes esperavam mais do produto e estão satisfeitos com a entrega, embora ainda estejam pendentes de testes para avaliar sua qualidade.",
+        "afirmacoes": [
+          {
+            "texto": "Há padrões recorrentes nas avaliações da Olist sobre a qualidade dos produtos.",
+            "fontes": [
+              "F1",
+              "F2",
+              "F3",
+              "F4",
+              "F5",
+              "F6",
+              "F7",
+              "F8"
+            ]
+          }
+        ],
+        "fontes": [
+          {
+            "marcador": "F1",
+            "document_id": "olist_review_row_079731",
+            "trecho": "Comentario: Produto nao foi entregue ainda. Por isso nao é possivel fazer uma avaliaçao adequada"
+          },
+          {
+            "marcador": "F2",
+            "document_id": "olist_review_row_069660",
+            "trecho": "Comentario: A avaliação geral foi regular porque ainda não testei o produto. Avaliei a compra/entrega."
+          },
+          {
+            "marcador": "F3",
+            "document_id": "olist_review_row_088507",
+            "trecho": "Comentario: Só posso fazer avaliação depois que receber o meu produto!!! No momento todas as respostas são negativa"
+          },
+          {
+            "marcador": "F4",
+            "document_id": "olist_review_row_080952",
+            "trecho": "Comentario: O produto foi entregue no prazo Ainda não posso avaliar a qualidade do produto Por não usei ainda"
+          },
+          {
+            "marcador": "F5",
+            "document_id": "olist_review_row_070041",
+            "trecho": "Titulo: ainda recomendo\nComentario: Se o produto não chegou, como pode ser obrigatório o preenchimento da avaliação geral ou se eu recomendo a loja?! Piada né?!"
+          },
+          {
+            "marcador": "F6",
+            "document_id": "olist_review_row_036894",
+            "trecho": "Comentario: Não estou entendendo?! Por q desta avaliação?? Cadê meu produto??"
+          },
+          {
+            "marcador": "F7",
+            "document_id": "olist_review_row_083087",
+            "trecho": "Titulo: Produto de qualidade!\nComentario: Compromisso com o cliente e qualidade no produto resumem essa compra."
+          },
+          {
+            "marcador": "F8",
+            "document_id": "olist_review_row_008942",
+            "trecho": "Comentario: Quanto a loja, perfeito. Entregue no prazo e tudo OK com o produto. Com relação ao produto, não testei ainda, mas parece de boa qualidade."
+          }
+        ],
+        "retrieved_ids": [
+          "olist_review_row_079731",
+          "olist_review_row_069660",
+          "olist_review_row_088507",
+          "olist_review_row_080952",
+          "olist_review_row_070041",
+          "olist_review_row_036894",
+          "olist_review_row_083087",
+          "olist_review_row_008942",
+          "olist_review_row_009112",
+          "olist_review_row_086041",
+          "olist_review_row_020962",
+          "olist_review_row_090247",
+          "olist_review_row_002345",
+          "olist_review_row_005673",
+          "olist_review_row_020993",
+          "olist_review_row_097470",
+          "olist_review_row_041076",
+          "olist_review_row_030226",
+          "olist_review_row_010437",
+          "olist_review_row_056152",
+          "olist_review_row_062298",
+          "olist_review_row_074978",
+          "olist_review_row_020957",
+          "olist_review_row_022628",
+          "olist_review_row_026556",
+          "olist_review_row_074438",
+          "olist_review_row_070708",
+          "olist_review_row_042571",
+          "olist_review_row_030220",
+          "olist_review_row_028468",
+          "olist_review_row_026606",
+          "olist_review_row_073622",
+          "olist_review_row_092285",
+          "olist_review_row_076582",
+          "olist_review_row_058794",
+          "olist_review_row_048059",
+          "olist_review_row_077854",
+          "olist_review_row_080821",
+          "olist_review_row_053006",
+          "olist_review_row_053381",
+          "olist_review_row_074801",
+          "olist_review_row_086590",
+          "olist_review_row_005842",
+          "olist_review_row_008526",
+          "olist_review_row_067072",
+          "olist_review_row_072431",
+          "olist_review_row_075196",
+          "olist_review_row_086786",
+          "olist_review_row_091030",
+          "olist_review_row_021508"
+        ],
+        "context_ids": [
+          "olist_review_row_079731",
+          "olist_review_row_069660",
+          "olist_review_row_088507",
+          "olist_review_row_080952",
+          "olist_review_row_070041",
+          "olist_review_row_036894",
+          "olist_review_row_083087",
+          "olist_review_row_008942"
+        ]
+      }
+    },
+    {
+      "id": "E06",
+      "categoria": "Investigacao de insatisfacao (filtro por nota)",
+      "pergunta": "Quais padrões podem ser identificados nas avaliações de clientes insatisfeitos?",
+      "nota_max": 2,
+      "tempo_segundos": 164.8,
+      "resultado": {
+        "status": "respondida",
+        "resposta": "As avaliações de clientes insatisfeitos mostram padrões consistentes de reclamações e frustração. Pode-se notar que muitos clientes estão questionando a entrega, a eficácia dos serviços de atendimento ao cliente e a qualidade do produto. Há também preocupações com a segurança da informação e a falta de transparência na comunicação entre a empresa e os clientes.",
+        "afirmacoes": [
+          {
+            "texto": "Muitos clientes estão questionando a entrega.",
+            "fontes": [
+              "F1",
+              "F2",
+              "F3",
+              "F4",
+              "F5",
+              "F6",
+              "F7",
+              "F8"
+            ]
+          },
+          {
+            "texto": "Há preocupações com a eficácia dos serviços de atendimento ao cliente.",
+            "fontes": [
+              "F3",
+              "F4",
+              "F5",
+              "F6",
+              "F7",
+              "F8"
+            ]
+          },
+          {
+            "texto": "Existem preocupações com a qualidade do produto.",
+            "fontes": [
+              "F3",
+              "F4",
+              "F5",
+              "F6",
+              "F7",
+              "F8"
+            ]
+          },
+          {
+            "texto": "Há preocupações com a segurança da informação.",
+            "fontes": [
+              "F7",
+              "F8"
+            ]
+          },
+          {
+            "texto": "Há preocupações com a falta de transparência na comunicação.",
+            "fontes": [
+              "F3",
+              "F4",
+              "F5",
+              "F6",
+              "F7",
+              "F8"
+            ]
+          }
+        ],
+        "fontes": [
+          {
+            "marcador": "F1",
+            "document_id": "olist_review_row_094502",
+            "trecho": "Titulo: insatisfeita\nComentario: Preciso saber a data que será entregue"
+          },
+          {
+            "marcador": "F2",
+            "document_id": "olist_review_row_027722",
+            "trecho": "Comentario: COMO VOU AVALIAR UM PRODUTO QUE NÃO RECEBI"
+          },
+          {
+            "marcador": "F3",
+            "document_id": "olist_review_row_096185",
+            "trecho": "Titulo: Insatisfação\nComentario: Fiz uma compra q foi cancelada por vcs. Tentei por diversas vezes falar com vcs contudo não fui atendido. Não sei pq minha compra foi cancelada? Ninguém entrou em contato e não consigo ser atendido"
+          },
+          {
+            "marcador": "F4",
+            "document_id": "olist_review_row_008799",
+            "trecho": "Comentario: nao sei como posso avaliar se nao recebi a mercadoria"
+          },
+          {
+            "marcador": "F5",
+            "document_id": "olist_review_row_086041",
+            "trecho": "Comentario: Nao posso avalia um produto que ainda nao recebi se fosse para avalia eu daria 0"
+          },
+          {
+            "marcador": "F6",
+            "document_id": "olist_review_row_088507",
+            "trecho": "Comentario: Só posso fazer avaliação depois que receber o meu produto!!! No momento todas as respostas são negativa"
+          },
+          {
+            "marcador": "F7",
+            "document_id": "olist_review_row_005509",
+            "trecho": "Comentario: Mandei um email até agora não obtive resposta. Meu produto não chegou..."
+          },
+          {
+            "marcador": "F8",
+            "document_id": "olist_review_row_002467",
+            "trecho": "Comentario: o produto nao poder ser avaliado ainda nao recebi"
+          }
+        ],
+        "retrieved_ids": [
+          "olist_review_row_094502",
+          "olist_review_row_027722",
+          "olist_review_row_096185",
+          "olist_review_row_008799",
+          "olist_review_row_086041",
+          "olist_review_row_088507",
+          "olist_review_row_005509",
+          "olist_review_row_002467",
+          "olist_review_row_052747",
+          "olist_review_row_077854",
+          "olist_review_row_037364",
+          "olist_review_row_074978",
+          "olist_review_row_020993",
+          "olist_review_row_032707",
+          "olist_review_row_058488",
+          "olist_review_row_038741",
+          "olist_review_row_074549",
+          "olist_review_row_036894",
+          "olist_review_row_074801",
+          "olist_review_row_053395",
+          "olist_review_row_019582",
+          "olist_review_row_002345",
+          "olist_review_row_098191",
+          "olist_review_row_030550",
+          "olist_review_row_033963",
+          "olist_review_row_014928",
+          "olist_review_row_009112",
+          "olist_review_row_020962",
+          "olist_review_row_044549",
+          "olist_review_row_055695",
+          "olist_review_row_018811",
+          "olist_review_row_070499",
+          "olist_review_row_003334",
+          "olist_review_row_037460",
+          "olist_review_row_003222",
+          "olist_review_row_073389",
+          "olist_review_row_010644",
+          "olist_review_row_064980",
+          "olist_review_row_035040",
+          "olist_review_row_097470",
+          "olist_review_row_010982",
+          "olist_review_row_084602",
+          "olist_review_row_042345",
+          "olist_review_row_066884",
+          "olist_review_row_041348",
+          "olist_review_row_073039",
+          "olist_review_row_095962",
+          "olist_review_row_081361",
+          "olist_review_row_025471",
+          "olist_review_row_014365"
+        ],
+        "context_ids": [
+          "olist_review_row_094502",
+          "olist_review_row_027722",
+          "olist_review_row_096185",
+          "olist_review_row_008799",
+          "olist_review_row_086041",
+          "olist_review_row_088507",
+          "olist_review_row_005509",
+          "olist_review_row_002467"
+        ],
+        "filtros": {
+          "nota_max": 2
+        },
+        "evidencias_contexto": [
+          {
+            "marcador": "F1",
+            "document_id": "olist_review_row_094502",
+            "review_score": 1,
+            "similaridade": 0.867
+          },
+          {
+            "marcador": "F2",
+            "document_id": "olist_review_row_027722",
+            "review_score": 1,
+            "similaridade": 0.8601
+          },
+          {
+            "marcador": "F3",
+            "document_id": "olist_review_row_096185",
+            "review_score": 1,
+            "similaridade": 0.8577
+          },
+          {
+            "marcador": "F4",
+            "document_id": "olist_review_row_008799",
+            "review_score": 1,
+            "similaridade": 0.8566
+          },
+          {
+            "marcador": "F5",
+            "document_id": "olist_review_row_086041",
+            "review_score": 1,
+            "similaridade": 0.8562
+          },
+          {
+            "marcador": "F6",
+            "document_id": "olist_review_row_088507",
+            "review_score": 1,
+            "similaridade": 0.8547
+          },
+          {
+            "marcador": "F7",
+            "document_id": "olist_review_row_005509",
+            "review_score": 1,
+            "similaridade": 0.8544
+          },
+          {
+            "marcador": "F8",
+            "document_id": "olist_review_row_002467",
+            "review_score": 1,
+            "similaridade": 0.8544
+          }
+        ]
+      }
+    },
+    {
+      "id": "E07",
+      "categoria": "Metadados: nota baixa (filtro por nota)",
+      "pergunta": "Quais são os principais problemas relatados nas avaliações?",
+      "nota_max": 1,
+      "tempo_segundos": 178.1,
+      "resultado": {
+        "status": "respondida",
+        "resposta": "De acordo com as avaliações dos clientes, alguns dos principais problemas incluem:\n- Espera indefinida de entrega.\n- Problemas de atendimento ao cliente.\n- Falta de informação sobre o estado do pedido.\n- Problemas financeiros, como bloqueio de cartão de crédito.\n- Problemas de entrega, como produtos não chegarem ou passarem do prazo de entrega.\n- Inconsistências entre informações fornecidas pela empresa e o que os clientes esperavam.\n- Demora excessiva para resolver problemas já registrados.\n- Falta de feedback ou acompanhamento após a compra.",
+        "afirmacoes": [
+          {
+            "texto": "Problemas de entrega e falta de informação são frequentemente mencionados.",
+            "fontes": [
+              "F1",
+              "F2",
+              "F3",
+              "F4",
+              "F5",
+              "F6",
+              "F7",
+              "F8"
+            ]
+          },
+          {
+            "texto": "Falta de atendimento eficiente e demora para resolver problemas também são pontos críticos.",
+            "fontes": [
+              "F1",
+              "F2",
+              "F3",
+              "F4",
+              "F5",
+              "F6",
+              "F7",
+              "F8"
+            ]
+          },
+          {
+            "texto": "Problemas financeiros, como bloqueio de cartão de crédito, são mencionados frequentemente.",
+            "fontes": [
+              "F6",
+              "F7"
+            ]
+          },
+          {
+            "texto": "Inconsistência entre informações fornecidas pela empresa e o que os clientes esperavam é outra preocupação.",
+            "fontes": [
+              "F1",
+              "F2",
+              "F3",
+              "F4",
+              "F5",
+              "F6",
+              "F7",
+              "F8"
+            ]
+          }
+        ],
+        "fontes": [
+          {
+            "marcador": "F1",
+            "document_id": "olist_review_row_037364",
+            "trecho": "Comentario: Solicitei cancelamento e estou aguardando o retorno. Não entendi porque estão me enviando essa avaliação..."
+          },
+          {
+            "marcador": "F2",
+            "document_id": "olist_review_row_087991",
+            "trecho": "Comentario: A dias esperando e ainda nao chegou. Como resolvemos?"
+          },
+          {
+            "marcador": "F3",
+            "document_id": "olist_review_row_002345",
+            "trecho": "Titulo: Informação\\preocupada\nComentario: Minha avaliação ta sendo esta pq aqui aparece q recebi o produto e ainda não chegou em casa.Por favor, queria saber o q está acontecendo ??? Atenciosamente, Juliana"
+          },
+          {
+            "marcador": "F4",
+            "document_id": "olist_review_row_088507",
+            "trecho": "Comentario: Só posso fazer avaliação depois que receber o meu produto!!! No momento todas as respostas são negativa"
+          },
+          {
+            "marcador": "F5",
+            "document_id": "olist_review_row_013810",
+            "trecho": "Comentario: Estou há mais de 01 mês esperando a solução do problema conforme atendimento aberto . Quanto tempo mais terei que aguardar ? Tenho que buscar ajuda no procon ou juizados de pequenas causas ??"
+          },
+          {
+            "marcador": "F6",
+            "document_id": "olist_review_row_079769",
+            "trecho": "Comentario: ja tive problemas com a lannister 2 vez o meu produto nao foi entregue e nem estornaram meu cartao quero saber como vai ficar"
+          },
+          {
+            "marcador": "F7",
+            "document_id": "olist_review_row_000689",
+            "trecho": "Comentario: Produto mais que passou do prazo de entregar, tento resolver o problema com a empresa e não consigo falar com ninguém. Tudo que fazem é me passar para reclamar num sistema que não funciona."
+          },
+          {
+            "marcador": "F8",
+            "document_id": "olist_review_row_005509",
+            "trecho": "Comentario: Mandei um email até agora não obtive resposta. Meu produto não chegou..."
+          }
+        ],
+        "retrieved_ids": [
+          "olist_review_row_037364",
+          "olist_review_row_087991",
+          "olist_review_row_002345",
+          "olist_review_row_088507",
+          "olist_review_row_013810",
+          "olist_review_row_079769",
+          "olist_review_row_000689",
+          "olist_review_row_005509",
+          "olist_review_row_066605",
+          "olist_review_row_044417",
+          "olist_review_row_054773",
+          "olist_review_row_004240",
+          "olist_review_row_003222",
+          "olist_review_row_041674",
+          "olist_review_row_008799",
+          "olist_review_row_089203",
+          "olist_review_row_073851",
+          "olist_review_row_016802",
+          "olist_review_row_058488",
+          "olist_review_row_087202",
+          "olist_review_row_048105",
+          "olist_review_row_087532",
+          "olist_review_row_087246",
+          "olist_review_row_010644",
+          "olist_review_row_038961",
+          "olist_review_row_025446",
+          "olist_review_row_006474",
+          "olist_review_row_055042",
+          "olist_review_row_019971",
+          "olist_review_row_056696",
+          "olist_review_row_022320",
+          "olist_review_row_032707",
+          "olist_review_row_038741",
+          "olist_review_row_011048",
+          "olist_review_row_051613",
+          "olist_review_row_024185",
+          "olist_review_row_014525",
+          "olist_review_row_084412",
+          "olist_review_row_031866",
+          "olist_review_row_092242",
+          "olist_review_row_033352",
+          "olist_review_row_048871",
+          "olist_review_row_099044",
+          "olist_review_row_022398",
+          "olist_review_row_007675",
+          "olist_review_row_079039",
+          "olist_review_row_067036",
+          "olist_review_row_049598",
+          "olist_review_row_060383",
+          "olist_review_row_031528"
+        ],
+        "context_ids": [
+          "olist_review_row_037364",
+          "olist_review_row_087991",
+          "olist_review_row_002345",
+          "olist_review_row_088507",
+          "olist_review_row_013810",
+          "olist_review_row_079769",
+          "olist_review_row_000689",
+          "olist_review_row_005509"
+        ],
+        "filtros": {
+          "nota_max": 1
+        },
+        "evidencias_contexto": [
+          {
+            "marcador": "F1",
+            "document_id": "olist_review_row_037364",
+            "review_score": 1,
+            "similaridade": 0.8668
+          },
+          {
+            "marcador": "F2",
+            "document_id": "olist_review_row_087991",
+            "review_score": 1,
+            "similaridade": 0.8657
+          },
+          {
+            "marcador": "F3",
+            "document_id": "olist_review_row_002345",
+            "review_score": 1,
+            "similaridade": 0.8637
+          },
+          {
+            "marcador": "F4",
+            "document_id": "olist_review_row_088507",
+            "review_score": 1,
+            "similaridade": 0.8625
+          },
+          {
+            "marcador": "F5",
+            "document_id": "olist_review_row_013810",
+            "review_score": 1,
+            "similaridade": 0.862
+          },
+          {
+            "marcador": "F6",
+            "document_id": "olist_review_row_079769",
+            "review_score": 1,
+            "similaridade": 0.8597
+          },
+          {
+            "marcador": "F7",
+            "document_id": "olist_review_row_000689",
+            "review_score": 1,
+            "similaridade": 0.8589
+          },
+          {
+            "marcador": "F8",
+            "document_id": "olist_review_row_005509",
+            "review_score": 1,
+            "similaridade": 0.8583
+          }
+        ]
+      }
+    },
+    {
+      "id": "E08",
+      "categoria": "Metadados: nota alta (filtro por nota)",
+      "pergunta": "O que os clientes mais elogiam na entrega?",
+      "nota_min": 5,
+      "tempo_segundos": 113.1,
+      "resultado": {
+        "status": "respondida",
+        "resposta": "Os clientes mais elogiaram a eficiência e rapidez da entrega.",
+        "afirmacoes": [
+          {
+            "texto": "Comentários de alta nota referentes à entrega rápida e eficaz.",
+            "fontes": [
+              "F1",
+              "F2",
+              "F3",
+              "F4",
+              "F5",
+              "F6",
+              "F7",
+              "F8"
+            ]
+          }
+        ],
+        "fontes": [
+          {
+            "marcador": "F1",
+            "document_id": "olist_review_row_054806",
+            "trecho": "Comentario: Amei a loja cumprem a entrega"
+          },
+          {
+            "marcador": "F2",
+            "document_id": "olist_review_row_054192",
+            "trecho": "Comentario: Ótima loja entrega é excelente"
+          },
+          {
+            "marcador": "F3",
+            "document_id": "olist_review_row_016833",
+            "trecho": "Comentario: É impressionante o respeito, consideração, tratamento e agilidade pela entrega da mercadoria ao consumidor dado pelo stark, só me resta agradecer e reconhecer estes valores. Obrigado."
+          },
+          {
+            "marcador": "F4",
+            "document_id": "olist_review_row_023049",
+            "trecho": "Comentario: Ótima loja entrega no prazo"
+          },
+          {
+            "marcador": "F5",
+            "document_id": "olist_review_row_012068",
+            "trecho": "Comentario: Agilidade na entrega!"
+          },
+          {
+            "marcador": "F6",
+            "document_id": "olist_review_row_051344",
+            "trecho": "Comentario: Eficiente do pedido a entrega"
+          },
+          {
+            "marcador": "F7",
+            "document_id": "olist_review_row_025688",
+            "trecho": "Comentario: Espetacular o tempo de entrega! Parabéns"
+          },
+          {
+            "marcador": "F8",
+            "document_id": "olist_review_row_076286",
+            "trecho": "Comentario: otima loja entrega super rapida"
+          }
+        ],
+        "retrieved_ids": [
+          "olist_review_row_054806",
+          "olist_review_row_054192",
+          "olist_review_row_016833",
+          "olist_review_row_023049",
+          "olist_review_row_012068",
+          "olist_review_row_051344",
+          "olist_review_row_025688",
+          "olist_review_row_076286",
+          "olist_review_row_051217",
+          "olist_review_row_010988",
+          "olist_review_row_027741",
+          "olist_review_row_044887",
+          "olist_review_row_030020",
+          "olist_review_row_001392",
+          "olist_review_row_011138",
+          "olist_review_row_033612",
+          "olist_review_row_036316",
+          "olist_review_row_047422",
+          "olist_review_row_092747",
+          "olist_review_row_019099",
+          "olist_review_row_033412",
+          "olist_review_row_060903",
+          "olist_review_row_078411",
+          "olist_review_row_097592",
+          "olist_review_row_065502",
+          "olist_review_row_017505",
+          "olist_review_row_028206",
+          "olist_review_row_074987",
+          "olist_review_row_051770",
+          "olist_review_row_043676",
+          "olist_review_row_084248",
+          "olist_review_row_053014",
+          "olist_review_row_049413",
+          "olist_review_row_083598",
+          "olist_review_row_002560",
+          "olist_review_row_079604",
+          "olist_review_row_050752",
+          "olist_review_row_061607",
+          "olist_review_row_061869",
+          "olist_review_row_018330",
+          "olist_review_row_057558",
+          "olist_review_row_005066",
+          "olist_review_row_012867",
+          "olist_review_row_070187",
+          "olist_review_row_044701",
+          "olist_review_row_053362",
+          "olist_review_row_087374",
+          "olist_review_row_014021",
+          "olist_review_row_018654",
+          "olist_review_row_038292"
+        ],
+        "context_ids": [
+          "olist_review_row_054806",
+          "olist_review_row_054192",
+          "olist_review_row_016833",
+          "olist_review_row_023049",
+          "olist_review_row_012068",
+          "olist_review_row_051344",
+          "olist_review_row_025688",
+          "olist_review_row_076286"
+        ],
+        "filtros": {
+          "nota_min": 5
+        },
+        "evidencias_contexto": [
+          {
+            "marcador": "F1",
+            "document_id": "olist_review_row_054806",
+            "review_score": 5,
+            "similaridade": 0.8941
+          },
+          {
+            "marcador": "F2",
+            "document_id": "olist_review_row_054192",
+            "review_score": 5,
+            "similaridade": 0.8903
+          },
+          {
+            "marcador": "F3",
+            "document_id": "olist_review_row_016833",
+            "review_score": 5,
+            "similaridade": 0.8842
+          },
+          {
+            "marcador": "F4",
+            "document_id": "olist_review_row_023049",
+            "review_score": 5,
+            "similaridade": 0.8817
+          },
+          {
+            "marcador": "F5",
+            "document_id": "olist_review_row_012068",
+            "review_score": 5,
+            "similaridade": 0.8807
+          },
+          {
+            "marcador": "F6",
+            "document_id": "olist_review_row_051344",
+            "review_score": 5,
+            "similaridade": 0.8805
+          },
+          {
+            "marcador": "F7",
+            "document_id": "olist_review_row_025688",
+            "review_score": 5,
+            "similaridade": 0.8797
+          },
+          {
+            "marcador": "F8",
+            "document_id": "olist_review_row_076286",
+            "review_score": 5,
+            "similaridade": 0.8791
+          }
+        ]
+      }
+    },
+    {
+      "id": "E09",
+      "categoria": "Evidencias insuficientes",
+      "pergunta": "Quantos clientes moram na cidade de Curitiba?",
+      "tempo_segundos": 105.1,
+      "resultado": {
+        "status": "evidencias_insuficientes",
+        "resposta": "Não há informações específicas sobre quantos clientes moram na cidade de Curitiba presente nas evidências fornecidas.",
+        "afirmacoes": [],
+        "fontes": [],
+        "retrieved_ids": [
+          "olist_review_row_083093",
+          "olist_review_row_074284",
+          "olist_review_row_067130",
+          "olist_review_row_097266",
+          "olist_review_row_081391",
+          "olist_review_row_089668",
+          "olist_review_row_000134",
+          "olist_review_row_021014",
+          "olist_review_row_046420",
+          "olist_review_row_043498",
+          "olist_review_row_069657",
+          "olist_review_row_097824",
+          "olist_review_row_000835",
+          "olist_review_row_099125",
+          "olist_review_row_001279",
+          "olist_review_row_006788",
+          "olist_review_row_092106",
+          "olist_review_row_006766",
+          "olist_review_row_022129",
+          "olist_review_row_061926",
+          "olist_review_row_005509",
+          "olist_review_row_091155",
+          "olist_review_row_006364",
+          "olist_review_row_079142",
+          "olist_review_row_097815",
+          "olist_review_row_028334",
+          "olist_review_row_043738",
+          "olist_review_row_002598",
+          "olist_review_row_026894",
+          "olist_review_row_032459",
+          "olist_review_row_072126",
+          "olist_review_row_044771",
+          "olist_review_row_044549",
+          "olist_review_row_038712",
+          "olist_review_row_091631",
+          "olist_review_row_055042",
+          "olist_review_row_010786",
+          "olist_review_row_062414",
+          "olist_review_row_049016",
+          "olist_review_row_037337",
+          "olist_review_row_006082",
+          "olist_review_row_021034",
+          "olist_review_row_009207",
+          "olist_review_row_045041",
+          "olist_review_row_025545",
+          "olist_review_row_032227",
+          "olist_review_row_025653",
+          "olist_review_row_075776",
+          "olist_review_row_001500",
+          "olist_review_row_020638"
+        ],
+        "context_ids": [
+          "olist_review_row_083093",
+          "olist_review_row_074284",
+          "olist_review_row_067130",
+          "olist_review_row_097266",
+          "olist_review_row_081391",
+          "olist_review_row_089668",
+          "olist_review_row_000134",
+          "olist_review_row_021014"
+        ]
+      }
+    },
+    {
+      "id": "E10",
+      "categoria": "Fora do escopo (regra de escopo)",
+      "pergunta": "Me ensine uma receita de bolo de cenoura.",
+      "tempo_segundos": 0.0,
+      "resultado": {
+        "status": "fora_do_escopo",
+        "resposta": "Esta solicitacao esta fora do escopo de analise das avaliacoes da Olist.",
+        "afirmacoes": [],
+        "fontes": [],
+        "retrieved_ids": [],
+        "context_ids": []
+      }
+    },
+    {
+      "id": "E11",
+      "categoria": "Pergunta externa sem regra de escopo",
+      "pergunta": "Qual a previsão do tempo em São Paulo amanhã?",
+      "tempo_segundos": 180.3,
+      "resultado": {
+        "status": "evidencias_insuficientes",
+        "resposta": "Não há informações específicas sobre a previsão do tempo em São Paulo amanhã presente nas evidências fornecidas.",
+        "afirmacoes": [],
+        "fontes": [],
+        "retrieved_ids": [
+          "olist_review_row_089747",
+          "olist_review_row_035262",
+          "olist_review_row_089418",
+          "olist_review_row_017396",
+          "olist_review_row_079735",
+          "olist_review_row_070886",
+          "olist_review_row_055444",
+          "olist_review_row_049971",
+          "olist_review_row_024440",
+          "olist_review_row_098191",
+          "olist_review_row_012179",
+          "olist_review_row_068625",
+          "olist_review_row_003029",
+          "olist_review_row_092145",
+          "olist_review_row_051666",
+          "olist_review_row_066929",
+          "olist_review_row_076653",
+          "olist_review_row_055695",
+          "olist_review_row_062922",
+          "olist_review_row_071001",
+          "olist_review_row_091155",
+          "olist_review_row_059473",
+          "olist_review_row_012530",
+          "olist_review_row_078075",
+          "olist_review_row_065730",
+          "olist_review_row_086716",
+          "olist_review_row_032707",
+          "olist_review_row_023793",
+          "olist_review_row_072204",
+          "olist_review_row_041733",
+          "olist_review_row_023373",
+          "olist_review_row_019611",
+          "olist_review_row_029948",
+          "olist_review_row_084311",
+          "olist_review_row_031866",
+          "olist_review_row_089448",
+          "olist_review_row_069280",
+          "olist_review_row_005542",
+          "olist_review_row_010644",
+          "olist_review_row_018525",
+          "olist_review_row_024469",
+          "olist_review_row_036557",
+          "olist_review_row_045506",
+          "olist_review_row_074325",
+          "olist_review_row_042120",
+          "olist_review_row_005509",
+          "olist_review_row_048092",
+          "olist_review_row_033824",
+          "olist_review_row_003770",
+          "olist_review_row_003334"
+        ],
+        "context_ids": [
+          "olist_review_row_089747",
+          "olist_review_row_035262",
+          "olist_review_row_089418",
+          "olist_review_row_017396",
+          "olist_review_row_079735",
+          "olist_review_row_070886",
+          "olist_review_row_055444",
+          "olist_review_row_049971"
+        ]
+      }
+    }
+  ]
+}
