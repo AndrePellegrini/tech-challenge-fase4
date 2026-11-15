@@ -52,6 +52,29 @@ _INTENCOES_EXTERNAS = (
         r"(?:bolo|pao|pizza|torta|sopa|arroz|"
         r"feijao|lasanha)\b"
     ),
+
+    # Pedidos explicitos de orientacao medica.
+    # Exemplo: "Qual e o tratamento indicado para
+    # uma infeccao de garganta?"
+    re.compile(
+        r"^(?:qual\s+(?:e\s+)?(?:o\s+)?)?"
+        r"(?:tratamento|remedio|medicamento)\s+"
+        r"(?:(?:indicado|recomendado)\s+)?"
+        r"(?:para|contra)\s+"
+        r"(?:(?:um|uma|a|o)\s+)?"
+        r"(?:infeccao|inflamacao|gripe|febre|"
+        r"dor|resfriado)\b"
+    ),
+
+    # Pedidos para ensinar receitas culinarias.
+    # Exemplo: "Me ensine uma receita de bolo."
+    re.compile(
+        r"^(?:me\s+)?(?:ensine|ensina|mostre|explique)\s+"
+        r"(?:(?:uma|a)\s+)?receita\s+(?:de|do|da)\s+"
+        r"(?:bolo|pao|pizza|torta|sopa|arroz|"
+        r"feijao|lasanha)\b"
+    ),
+
 )
 
 

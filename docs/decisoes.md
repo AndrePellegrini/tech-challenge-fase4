@@ -913,3 +913,66 @@ casos de desenvolvimento preparados pela P1.
 - Os resultados historicos permanecem inalterados.
 
 **Proximos passos:** avaliar os demais casos de desenvolvimento, revisar semanticamente as respostas, melhorar a rastreabilidade das transformacoes e atualizar o versionamento do prompt antes da consolidacao da entrega.
+
+## D025 - Refinamento do classificador de escopo (15/11/2026)
+
+**Decisao:** ampliar de forma conservadora as regras do classificador de escopo para reconhecer perguntas claramente externas ao dominio das avaliacoes da Olist.
+
+**Motivacao:** os casos de desenvolvimento O01 e O02 representam solicitacoes sobre tratamento de saude e receitas culinarias, sem relacao com a analise de avaliacoes de e-commerce.
+
+**Implementacao:**
+- Atualizacao das regras em src/escopo.py.
+- Inclusao de testes de regressao em tests/test_escopo_p38.py.
+- Preservacao do fluxo que evita recuperacao e geracao quando a pergunta esta claramente fora do escopo.
+
+**Resultados:**
+- O01 e O02 retornaram fora_do_escopo.
+- Ambos foram aprovados nos criterios objetivos do avaliador P1.
+- Nenhum documento foi recuperado ou citado nesses casos.
+
+**Limitacoes:**
+- As regras sao baseadas em padroes e nao constituem um classificador semantico universal.
+- Perguntas ambiguas devem continuar sendo tratadas de forma conservadora.
+
+## D026 - Prompt compacto e selecao adaptativa (15/11/2026)
+
+**Decisao:** utilizar o prompt v3 original quando houver ate 3 evidencias e um prompt compacto quando houver 4 ou mais evidencias.
+
+**Motivacao:**
+- Na baseline de 14 casos de desenvolvimento, 8 apresentaram status correspondente ao gabarito.
+- R06, R11 e R13 apresentaram truncamento do JSON.
+- R15 apresentou saida JSON invalida.
+- O prompt compacto corrigiu essas quatro falhas nos experimentos, mas causou regressao em A01 e A02.
+- O prompt v3 original preservou o comportamento esperado nos cenarios de contexto pequeno testados.
+
+**Implementacao:**
+- Prompt original preservado em src/generation/prompt_v3.py.
+- Prompt compacto mantido em src/generation/resposta.py.
+- Selecao adaptativa implementada em construir_prompt(), conforme a quantidade de evidencias.
+- Prompt compacto solicita no maximo 3 afirmacoes, JSON estruturado e campo global fontes vazio.
+- A aplicacao continua reconstruindo as fontes a partir dos marcadores validados.
+- Testes adicionados em test_prompt_compacto_p310.py e test_prompt_adaptativo_p311.py.
+- VERSAO_PROMPT atualizada para v3-adaptativo-p311.
+
+**Validacao:**
+- 84/84 testes automatizados aprovados.
+- I01, I02, A01 e A02: 4/4 status corretos e nenhum erro estrutural na regressao da P3.11.
+- R06, R11, R13 e R15: 4/4 status corretos e nenhum erro estrutural na regressao da P3.11.
+- A01 e A02 nao reproduziram as sentinelas maliciosas na resposta.
+- Utilizados somente casos de desenvolvimento; conjunto reservado nao utilizado para ajustes.
+
+**Resultados e interpretacao:**
+- Baseline inicial: 8/14 status corretos (57,1%).
+- A correcao experimental dos quatro erros de geracao sugere 12/14 (85,7%), mas essa taxa nao representa uma nova execucao integral dos 14 casos.
+- Os resultados gerados antes da atualizacao de VERSAO_PROMPT mantem o identificador historico v3 em seus traces.
+
+**Limitacoes conhecidas:**
+- O modelo ainda apresenta excesso de citacoes, por vezes incluindo documentos sem relacao direta com as afirmacoes.
+- R15 apresentou interpretacao inadequada do texto sobre custo do frete.
+- R18 apresentou evidencia relevante fora dos 8 documentos selecionados para contexto.
+- As referencias relevantes de R20 nao apareceram no Top-50 recuperado.
+- A fidelidade semantica formal continua marcada como revisao_humana_pendente.
+- A selecao com limite de 3 evidencias e uma heuristica experimental, nao uma garantia geral de seguranca ou qualidade.
+- Os resultados nao demonstram generalizacao para perguntas ou ataques nao testados.
+
+**Proximos passos:** documentar os experimentos no diario, revisar a integracao com a recuperacao da P2, validar o estado final do Git e preparar commit na branch feature/p3-geracao, sem merge automatico na main.
