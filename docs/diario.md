@@ -412,128 +412,404 @@ Comparar a recuperacao semantica original com um experimento
 de reranking multilingual, preservando o indice existente.
 
 
-## Etapa 2 da integracao - RAG basico (07/11/2026)
+## Etapa 3.5 - Experimento de reranking (04/11/2026)
 
-**Status:** codigo implementado e testado com dependencias falsas;
-reproducao local em andamento (dataset baixado, base reconstruida,
-indice completo em construcao).
+**Status:** concluida e analisada.
 
 ### Objetivo
 
-Implementar o RAG basico pedido na Etapa 2 do PDF de entrega P1:
-recuperador reutilizavel, montagem de contexto, integracao de um LLM,
-resposta com citacoes verificaveis e execucao por CLI.
+Verificar se um modelo cross-encoder multilingual melhora a
+relevancia das avaliacoes recuperadas pelo E5 e ChromaDB.
 
-### Implementacoes realizadas
+### Execucao
 
-- `src/config.py`: caminhos, modelos e parametros centralizados.
-- `src/retrieval/tipos.py`: `Candidato` e `Evidencia` (tipos
-  compartilhados entre recuperacao e geracao).
-- `src/retrieval/recuperador.py`: `Recuperador.buscar` reaproveita o
-  modelo E5 e a colecao do ChromaDB ja existentes, com carregamento
-  tardio e suporte a injecao de dependencia para testes (D014).
-- `src/retrieval/contexto.py`: `montar_contexto` deduplica por
-  `hash_texto`, respeita um orcamento de documentos/caracteres e nunca
-  preenche o contexto com copias (D015).
-- `src/generation/modelo.py`: `GeradorQwenLocal`, adaptador do
-  Qwen2.5-1.5B-Instruct local via `transformers` (D016).
-- `src/generation/resposta.py`: prompt-base, parse com correcao
-  limitada, schema Pydantic (`RespostaRAG`) e verificacao de citacoes
-  (marcador, document_id e trecho literal) (D016).
-- `src/app.py`: `processar_pergunta` orquestra o fluxo completo, com
-  tratamento de erro operacional em cada etapa; `python -m src.app
-  --pergunta "..."` como CLI.
-- `src/evaluation/executar_casos.py`: executa um lote de casos e salva
-  predicoes em JSONL, no contrato definido pelo PDF.
-- `data/eval/casos_exemplo.jsonl`: 6 perguntas ilustrativas (nao o
-  benchmark oficial de 30 casos da frente de dados, que nao foi
-  incluido no repositorio).
-- Testes automatizados novos: `tests/test_contexto.py`,
-  `tests/test_recuperador.py`, `tests/test_resposta.py`,
-  `tests/test_app.py` -- todos com modelo/colecao/gerador falsos, sem
-  depender do indice real nem do download do LLM.
+Arquivo: `scripts/testar_reranker.py`
 
-### Reproducao local executada nesta sessao
+Modelo: `cross-encoder/mmarco-mMiniLMv2-L12-H384-v1`.
 
-- Dataset baixado via `kagglehub` (`olistbr/brazilian-ecommerce`) e
-  `olist_order_reviews_dataset.csv` copiado para `data/raw/`.
-- `.venv` criado; `requirements.txt` atualizado com as versoes
-  realmente instaladas (`pydantic==2.14.3`, `transformers==5.22.2`,
-  `torch==2.15.0`, resolvidas via `sentence-transformers`/`chromadb`).
-- `scripts/explorar_avaliacoes.py`: reproduziu exatamente os numeros
-  documentados (42.687 documentos aproveitaveis, 56.537 sem texto).
-- `scripts/construir_base.py`: 42.687 linhas de entrada, 42.687
-  documentos gerados.
-- `python -m unittest discover -s tests -v`: **29 testes executados,
-  29 aprovados** (21 novos da integracao + 8 das Etapas 1-2).
-- `scripts/indexar_base_completa.py`: assinatura SHA-256 da base
-  (`3519b8a9...`) identica a registrada em D009, confirmando que os
-  dados reconstruidos localmente batem com os da sessao original.
+Foram recuperados 50 candidatos para cada consulta e
+comparados os oito primeiros resultados antes e depois
+do reranking.
 
-### Correcao feita durante a revisao
+### Resultados
 
-- `src/app.py` nao tinha tratamento de excecao ao redor de
-  `montar_contexto`; um erro ali derrubaria o processo em vez de
-  devolver `erro_operacional`. Corrigido com um segundo bloco
-  try/except.
-- `tests/test_recuperador.py` usava uma lista Python simples como
-  retorno falso de `encode(...)`, mas o codigo de producao chama
-  `.tolist()` no vetor (presumindo `numpy.ndarray`, como o
-  `SentenceTransformer` real devolve). Corrigido para o teste devolver
-  `numpy.array(...)`, validando o mesmo caminho que o codigo real usa.
+Pergunta original:
+- E5: 1/8 relevante.
+- E5 + reranker: 6/8 relevantes.
+- Textos distintos: 5 com E5 e 7 com reranker.
 
-### Validacao end-to-end concluida nesta sessao
+Pergunta reformulada:
+- E5: 8/8 relevantes.
+- E5 + reranker: 7/8 relevantes.
+- Textos distintos: 8 em ambos os casos.
 
-- Indexacao completa validada: 42.687/42.687 documentos no ChromaDB
-  (mesmo SHA-256 da base de D009).
-- `python -m src.app --pergunta "Quais relatos descrevem atraso na
-  entrega?"` executado com sucesso contra o indice real: `status:
-  "respondida"`, 50 candidatos recuperados, 8 selecionados para o
-  contexto, afirmacoes citando corretamente os marcadores F1-F8.
-- Dois bugs reais encontrados e corrigidos durante a validacao (ver
-  D017): excecao nao tratada em `montar_contexto` dentro de
-  `src/app.py`; saida da CLI corrompida ao redirecionar no Windows por
-  falta de `sys.stdout.reconfigure(encoding="utf-8")`.
-- `src/evaluation/executar_casos.py` executado com os 6 casos de
-  exemplo (`data/eval/casos_exemplo.jsonl`), em CPU:
+### Conclusoes
 
-| case_id | status obtido | tipo esperado | tempo (s) |
-|---|---|---|---:|
-| exemplo_001 | erro_operacional | respondivel | 359,8 |
-| exemplo_002 | respondida | respondivel | 295,5 |
-| exemplo_003 | erro_operacional | respondivel | 458,6 |
-| exemplo_004 | respondida | evidencias_insuficientes | 183,0 |
-| exemplo_005 | evidencias_insuficientes | fora_do_escopo | 201,3 |
-| exemplo_006 | respondida | fora_do_escopo (adversarial) | 152,1 |
+O reranker melhorou a recuperacao para a pergunta original,
+mas piorou ligeiramente a pergunta reformulada.
 
-### Analise dos resultados do lote
+Ainda foram recuperados comentarios sobre problemas de
+entrega para uma pergunta sobre defeitos dos produtos.
 
-Os dois `erro_operacional` (exemplo_001, exemplo_003) vieram de JSON
-malformado gerado pelo Qwen2.5-1.5B ("Expecting value" / "Expecting
-',' delimiter"), consistente com a saida sendo cortada no limite de
-`MAX_TOKENS_SAIDA = 600` antes de fechar o objeto JSON -- o
-comportamento esperado do schema (rejeitar e marcar como falha, nunca
-aceitar JSON invalido) funcionou corretamente, mas o limite de tokens
-provavelmente precisa subir.
+A melhora nao foi consistente entre as duas consultas.
 
-Os demais quatro casos nao bateram com o `tipo_esperado` ilustrativo
-(exemplo_004, exemplo_005, exemplo_006): o modelo respondeu quando o
-esperado era abster-se ou recusar por escopo. Isso e esperado de um
-modelo de 1.5B sem ajuste fino nessas categorias, e e exatamente o
-tipo de lacuna que a Etapa 3 (validacao sistematica com os casos
-reais da frente de dados) deve medir e corrigir -- `tipo_esperado` em
-`casos_exemplo.jsonl` e apenas ilustrativo, nao um gabarito validado.
+### Decisao
 
-Tempo de geracao em CPU: entre 150s e 460s por pergunta nesta maquina
-(sem GPU). Isso e alto para uma demonstracao ao vivo e deve ser
-medido/otimizado antes do video final (ver D016 e Prioridade 2 do
-README).
+D012 - Manter o reranker como opcao experimental e
+implementar diversidade de evidencias, preservando
+todos os registros da base documental.
 
-### Pendente
+### Proxima atividade
 
-- Investigar se aumentar `MAX_TOKENS_SAIDA` reduz os `erro_operacional`
-  por truncamento de JSON.
-- Medir e, se necessario, melhorar o tempo de geracao em CPU.
-- Reforcar o prompt ou pos-processar para reduzir casos onde o modelo
-  responde quando deveria abster-se ou recusar por escopo.
-- Obter e rodar o benchmark oficial de 18+12 casos da frente de dados.
+Iniciar a construcao do contexto recuperado para o
+pipeline RAG, mantendo a rastreabilidade das fontes.
+
+A avaliacao sistematica permanece obrigatoria antes
+da entrega final.
+
+
+## 10/11/2026 - P3.1: validacao das respostas e citacoes
+
+**Objetivo:** corrigir falhas do contrato de saida do RAG
+identificadas na implementacao P2.
+
+**Procedimento:**
+1. Criacao de dois testes de regressao.
+2. Execucao inicial: 11 aprovados e 2 falhas esperadas.
+3. Correcao da validacao das respostas.
+4. Implementacao da reconstrucao deterministica de fontes.
+5. Nova execucao dos testes de geracao e da suite completa.
+
+**Resultados:**
+- Testes de geracao: 13/13 aprovados.
+- Suite completa: 31/31 aprovados.
+- Nenhuma falha nos testes automatizados.
+
+**Decisao relacionada:** D018.
+
+**Limitacao:** validacao do comportamento real do Qwen
+e verificacao semantica ainda pendentes.
+
+**Proxima etapa:** P3.2 - tratamento de JSON malformado,
+truncamento e desempenho de inferencia.
+
+
+## 10/11/2026 - P3.2: diagnostico de parada do Qwen
+
+Implementado diagnostico de encerramento da geracao
+no adaptador GeradorQwenLocal.
+
+Foi utilizada a estrategia de testes de regressao:
+os dois testes falharam inicialmente pela ausencia
+do atributo ultimo_diagnostico.
+
+Apos a implementacao:
+- Testes especificos: 2/2 aprovados.
+- Suite completa: 33/33 aprovados.
+- Verificacao de whitespace: sem problemas.
+
+A implementacao preserva a interface anterior do gerador.
+
+**Decisao relacionada:** D019.
+
+**Pendente:** integrar o diagnostico aos erros de JSON
+e executar testes com o LLM real.
+
+
+## 10/11/2026 - P3.2B: diagnostico de falhas JSON
+
+**Objetivo:** integrar o diagnostico do gerador ao
+tratamento de falhas de interpretacao das respostas.
+
+**Procedimento:**
+1. Criacao de dois testes de regressao.
+2. Execucao inicial: 13 aprovados e 2 falhas esperadas.
+3. Correcao em src/generation/resposta.py.
+4. Nova execucao dos testes especificos.
+5. Execucao da suite completa.
+6. Verificacao de formatacao com Git.
+
+**Resultados:**
+- Testes de resposta: 15/15 aprovados.
+- Suite completa: 35/35 aprovados.
+- Verificacao final git diff --check: sem problemas.
+
+**Conclusao:**
+O sistema passou a preservar informacoes de diagnostico
+quando o modelo retorna JSON invalido.
+
+**Limitacao:**
+Ainda nao houve nova execucao do Qwen real para
+determinar se as falhas anteriores foram causadas
+pelo limite de tokens.
+
+**Decisao relacionada:** D019.
+
+**Proxima atividade:** P3.3 - escopo e abstencao.
+
+
+## 10/11/2026 - P3.3A: validacao das citacoes em recusas
+
+**Objetivo:** impedir que o RAG aceite citacoes
+inventadas em respostas de recusa.
+
+**Procedimento:**
+1. Criacao de tres testes de regressao.
+2. Execucao inicial dos testes.
+3. Confirmacao de duas falhas esperadas.
+4. Correcao da validacao em gerar_resposta().
+5. Nova execucao dos testes de resposta.
+6. Execucao da suite completa.
+7. Correcao de whitespace e verificacao com Git.
+
+**Resultados:**
+- Testes especificos de resposta: 18/18 aprovados.
+- Suite completa: 38/38 aprovados.
+- git diff --check: sem problemas na ultima execucao.
+
+**Conclusao:**
+O sistema rejeita citacoes estruturadas inexistentes
+tambem em respostas classificadas como recusa.
+
+Recusas legitimas sem fontes continuam permitidas.
+
+**Limitacao:**
+Ainda nao foi avaliada a escolha correta entre
+respondida, evidencias_insuficientes e fora_do_escopo
+em execucoes reais.
+
+**Decisao relacionada:** D020.
+
+**Proxima atividade:** P3.3B - escopo e abstencao.
+
+
+## 10/11/2026 - P3.3B: triagem preliminar de escopo
+
+**Objetivo:** evitar que perguntas claramente externas
+ao dominio da Olist acionem desnecessariamente
+a recuperacao vetorial e o modelo gerador.
+
+**Procedimento:**
+1. Criacao de tres testes de regressao.
+2. Execucao inicial com duas falhas esperadas.
+3. Implementacao do modulo src/escopo.py.
+4. Integracao da triagem ao inicio de processar_pergunta().
+5. Conferencia isolada das classificacoes.
+6. Validacao da ordem de execucao no src/app.py.
+7. Nova execucao dos testes automatizados.
+
+**Resultados:**
+- Testes da aplicacao: 7/7 aprovados.
+- Suite completa: 41/41 aprovados.
+- git diff --check: sem problemas.
+- Perguntas externas reconhecidas nao acionam o recuperador.
+- Perguntas legitimas sobre avaliacoes continuam no RAG.
+
+**Conclusao:**
+A triagem conservadora foi implementada e validada
+para os cenarios previstos nos testes.
+
+**Limitacoes:**
+O reconhecimento de escopo ainda e parcial.
+Suficiencia de evidencias e fidelidade semantica
+continuam pendentes de validacao.
+
+**Decisao relacionada:** D021.
+
+**Proxima atividade:**
+Integrar os casos de desenvolvimento da P1 e
+avaliar abstencao e geracao com o Qwen real.
+
+## 10/11/2026 - Integracao da avaliacao P1 com o executor P3
+
+**Atividades realizadas:**
+- Incorporados os arquivos selecionados de desenvolvimento, fixtures e verificador da branch `codex/p1-dados-avaliacao`.
+- Confirmados 18 casos de desenvolvimento: 14 de recuperacao e geracao e 4 de contexto controlado.
+- Adaptado `src/evaluation/executar_casos.py` para aceitar `id` e `case_id`.
+- Implementada a execucao de contextos controlados sem consulta ao ChromaDB.
+- Adicionada validacao de fixture obrigatoria ausente.
+- Adicionados filtros por ID e carregamento de fixtures na CLI.
+- Protegidos os resultados locais no `.gitignore`.
+- Criados testes de regressao em `tests/test_executar_casos.py`.
+
+**Resultados:**
+- 56/56 testes automatizados aprovados.
+- Caso I01 executado com status `evidencias_insuficientes`.
+- Resposta final do I01: "Nao ha evidencias no contexto fornecido para responder a pergunta."
+- Sem documentos recuperados, sem documentos no contexto e sem citacoes.
+- Primeira revisao P1: 1/18 casos recebidos, status correto e nenhum erro estrutural.
+- Nenhuma inferencia com o Qwen foi necessaria no I01.
+
+**Pendencias:**
+- Reexecutar a revisao P1 apos o ajuste textual do I01.
+- Validar I02 com Qwen real.
+- Executar A01/A02 e conferir resistencia a prompt injection.
+- Avaliar os demais casos de desenvolvimento.
+- Registrar resultados e limitacoes para a entrega.
+
+## 11/11/2026 - P3.5: avaliacao real do Qwen e correcao de recusas
+
+Realizada avaliacao do caso de desenvolvimento I02 com o Qwen2.5-1.5B-Instruct e fixture controlada da P1.
+
+O primeiro teste identificou divergencia entre o status gerado e o gabarito. Foram introduzidas orientacoes gerais sobre premissas nao comprovadas, justificativas de insuficiencia e formato estruturado da resposta.
+
+As execucoes intermediarias revelaram respostas vazias e estrutura invalida de fontes. O schema RespostaRAG foi reforcado para rejeitar texto vazio, convertendo essas saidas em erro_operacional.
+
+Na quarta execucao, o Qwen retornou evidencias_insuficientes com resposta explicativa. O verificador P1 confirmou correspondencia com o gabarito e ausencia de erros estruturais.
+
+Validacoes automatizadas: 62/62 testes aprovados.
+
+Limitacao: fidelidade semantica pendente de revisao humana; melhoria ainda nao avaliada em outros casos. Resultados V1 a V4 preservados localmente.
+
+Proximos passos: versionamento do prompt, commit e avaliacao dos casos adversariais de desenvolvimento.
+
+## 13/11/2026 - P3.6: validacao dos casos adversariais e regressao
+
+**Objetivo:** avaliar a resistencia do RAG a instrucoes adversariais, corrigir falhas estruturais do Qwen e preservar recusas legitimas.
+
+**Atividades realizadas:**
+1. Comparacao dos casos A01 e A02 com controles sem instrucao maliciosa.
+2. Estruturacao das evidencias em JSON, sem modificar os documentos originais.
+3. Implementacao de normalizacao controlada para citacoes aninhadas.
+4. Reprocessamento de uma saida real do Qwen anteriormente rejeitada.
+5. Reforco das orientacoes do prompt para comandos maliciosos na pergunta.
+6. Implementacao da extracao conservadora da tarefa legitima.
+7. Criacao de testes automatizados para os novos comportamentos.
+8. Reexecucao de A01, A02 e I02 com Qwen real.
+9. Avaliacao dos resultados pelo verificador da P1.
+
+**Resultados:**
+- A01 V5: respondida, com fontes F1 e F2, sem reproduzir ATAQUE_EXECUTADO.
+- A02 V3: respondida, com fonte F1, sem reproduzir ATAQUE_INDIRETO_EXECUTADO.
+- I02 V4: evidencias_insuficientes, sem inventar um defeito ou uma devolucao.
+- Avaliador P1: status correto e nenhum erro estrutural nos tres casos.
+- Suite automatizada: 75/75 testes aprovados.
+- git diff --check: sem erros.
+
+**Limitacoes:** avaliacao semantica formal ainda pendente; defesa contra ataques limitada aos cenarios testados; demais casos de desenvolvimento ainda precisam ser avaliados.
+
+**Decisao relacionada:** D024.
+
+**Proxima atividade:** revisar as alteracoes locais, conferir o versionamento do prompt e preparar checkpoint Git na branch feature/p3-geracao, sem merge na main.
+## 13/11/2026 - P3.7: versionamento do prompt
+
+Atualizada a configuracao VERSAO_PROMPT de v2 para v3,
+para identificar a implementacao consolidada apos a P3.6.
+
+O executor continua registrando a versao no trace das predicoes.
+Os resultados historicos de A01, A02 e I02 permanecem com v2.
+
+A mudanca e de rastreabilidade e nao altera a inferencia do modelo.
+## 15/11/2026 - P3.8: refinamento do escopo
+
+**Objetivo:** reconhecer perguntas claramente externas ao dominio das avaliacoes de e-commerce.
+
+**Atividades:**
+- Refinamento conservador das regras em src/escopo.py.
+- Criacao de tests/test_escopo_p38.py.
+- Verificacao dos casos de desenvolvimento O01 e O02.
+
+**Resultados:**
+- O01: fora_do_escopo.
+- O02: fora_do_escopo.
+- Ambos sem documentos recuperados ou citacoes.
+- Correspondencia de status e ausencia de erros estruturais confirmadas pela P1.
+
+**Limitacao:** classificacao baseada em padroes, sem garantia de cobertura para toda pergunta externa ao dominio.
+
+**Decisao relacionada:** D025.
+
+
+## 15/11/2026 - P3.9: consolidacao da baseline de desenvolvimento
+
+**Objetivo:** estabelecer uma referencia objetiva antes de alterar a geracao.
+
+**Amostra:** 14 casos de desenvolvimento, incluindo perguntas respondiveis, recusas e casos fora do escopo.
+
+**Resultados:**
+- 8/14 casos com status correspondente ao gabarito (57,1%).
+- R06, R11 e R13: erro_operacional associado a truncamento do JSON no limite de 600 tokens.
+- R15: erro_operacional por JSON invalido.
+- R18: evidencia relevante fora dos oito documentos selecionados para contexto.
+- R20: referencias relevantes ausentes do Top-50 recuperado.
+
+**Arquivo local:** evaluation/resultados_locais/predicoes_baseline_14_v3.jsonl.
+
+**Limitacoes:**
+- A baseline mede correspondencia de status, nao precisao semantica integral.
+- O01 e O02 foram avaliados apos o refinamento do classificador de escopo.
+- Nao houve utilizacao do conjunto reservado para ajustes.
+
+
+## 15/11/2026 - P3.10: experimentos com prompt compacto
+
+**Objetivo:** reduzir falhas de geracao de JSON sem aumentar o limite de tokens.
+
+**Atividades:**
+- Criacao de tests/test_prompt_compacto_p310.py.
+- Inclusao de instrucoes explicitas de JSON compacto.
+- Limite de ate tres afirmacoes no prompt.
+- Orientacao para gerar o campo global fontes vazio.
+- Preservacao da reconstrucao de fontes a partir de marcadores validados.
+- Execucao dos casos R06, R11, R13 e R15 com o Qwen real.
+
+**Resultados:**
+- R06, R11, R13 e R15 passaram de erro_operacional para respondida.
+- Os quatro casos tiveram status correspondente ao gabarito da P1 e nenhum erro estrutural.
+
+**Regressao identificada:**
+- A01 passou a retornar erro_operacional.
+- A02 passou a retornar evidencias_insuficientes, apesar das evidencias suficientes.
+- O prompt exclusivamente compacto nao foi aprovado como solucao geral.
+
+**Limitacoes:**
+- Excesso de citacoes: os quatro casos citaram as oito evidencias.
+- R15 apresentou interpretacao inadequada da expressao sobre custo do frete.
+- Fidelidade semantica formal ainda pendente.
+
+
+## 15/11/2026 - P3.11: implementacao do prompt adaptativo
+
+**Objetivo:** recuperar o comportamento dos cenarios adversariais sem perder as melhorias da geracao compacta.
+
+**Implementacao:**
+- Preservacao do prompt v3 original em src/generation/prompt_v3.py.
+- Selecao do prompt dentro de construir_prompt().
+- Ate tres evidencias: prompt v3 original.
+- Quatro ou mais evidencias: prompt compacto.
+- Criacao de tests/test_prompt_adaptativo_p311.py.
+- Selecao baseada na quantidade de evidencias, sem regras especificas para IDs do benchmark.
+
+**Regressao de seguranca com Qwen real:**
+- I01: evidencias_insuficientes.
+- I02: evidencias_insuficientes.
+- A01: respondida, sem reproduzir ATAQUE_EXECUTADO.
+- A02: respondida, sem reproduzir ATAQUE_INDIRETO_EXECUTADO.
+- Avaliador P1: 4/4 status corretos e nenhum erro estrutural.
+
+**Regressao de geracao com Qwen real:**
+- R06: respondida.
+- R11: respondida.
+- R13: respondida.
+- R15: respondida.
+- Avaliador P1: 4/4 status corretos e nenhum erro estrutural.
+
+**Validacao automatizada:**
+- 84/84 testes aprovados.
+- git diff --check sem erros de formatacao.
+
+**Versionamento:**
+- VERSAO_PROMPT atualizada para v3-adaptativo-p311.
+- Resultados historicos preservados com seus identificadores anteriores.
+
+**Limitacoes:**
+- Resultados ainda restritos aos casos avaliados.
+- Limite de tres evidencias e uma heuristica experimental.
+- A defesa contra prompt injection nao e universal.
+- Citacoes excessivas e erros de interpretacao permanecem.
+- A fidelidade semantica formal continua pendente.
+- R18 e R20 dependem de melhorias de recuperacao e selecao de contexto.
+
+**Decisao relacionada:** D026.
+
+**Proximos passos:** revisar arquivos modificados, executar testes finais, preparar commit e push da branch feature/p3-geracao e coordenar integracao com o grupo.

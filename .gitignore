@@ -20,3 +20,6 @@ data/vectorstore/*
 .DS_Store
 # Predicoes geradas localmente: contem trechos literais de avaliacoes
 reports/predicoes_*.jsonl
+# Resultados locais da avaliacao P1/P3
+evaluation/resultados_locais/
+evaluation/local/
