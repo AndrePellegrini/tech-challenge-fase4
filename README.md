@@ -1,15 +1,14 @@
-
 # Voice of Customer Intelligence com RAG
 
 **FIAP POSTECH | Data & AI Scientist | Tech Challenge - Fase 4**
 
-**Versao:** 0.2.0 - RAG basico integrado
+**Projeto:** Tech Challenge Fase 4 — Voice of Customer Intelligence com RAG
+**Checkpoint documentado:** P3.13 (15/11/2026), branch `feature/p3-geracao`, commit [`2ae89dd`](https://github.com/AndrePellegrini/tech-challenge-fase4/commit/2ae89dd).
+**Versao do prompt:** `v3-adaptativo-p311` (`src/config.py`). O numero de versao geral do projeto deve ser alinhado pelo grupo antes do merge na `main`.
 
-**Status:** preparacao, embeddings, indexacao, recuperador reutilizavel,
-montagem de contexto e geracao com Qwen2.5-1.5B-Instruct local
-implementados e cobertos por testes automatizados com dependencias
-falsas. Validacao end-to-end contra o indice completo e os casos de
-desenvolvimento do time ainda pendente nesta maquina.
+**Estado:** base Olist, embeddings e indice ChromaDB de 42.687 documentos; recuperador e composicao de contexto; geracao local com Qwen; verificacao de fontes, escopo, tratamento de premissas e CLI minima implementados. O pipeline foi exercitado com o indice completo em parte dos casos de desenvolvimento. Foram aprovados **84 testes automatizados** e **8 regressões objetivas da P3.11**. A revisao de fidelidade semantica, a avaliacao integral e a integracao final com as frentes P2/P4 ainda estao pendentes.
+
+> **Escopo desta revisao:** descreve o estado validado na branch `feature/p3-geracao` (nao presume merge na `main`). Resultados de experimentos nao devem ser apresentados como metricas globais de precisao do sistema.
 
 ## 1. Sobre o projeto
 
@@ -32,7 +31,7 @@ Exemplos de perguntas que a solucao devera responder:
 - Quais reclamacoes envolvem produtos danificados?
 - O que os consumidores elogiam sobre suas compras?
 - Existem evidencias suficientes para responder a uma pergunta?
-- Quais problemas aparecem com maior frequencia na base analisada?
+- Quais tipos de reclamacao sobre atendimento aparecem nos textos recuperados?
 
 As respostas deverao ser rastreaveis e limitadas ao que os dados
 efetivamente sustentam.
@@ -57,9 +56,7 @@ e produzir respostas coerentes com o conteudo recuperado.
 9. Avaliar a qualidade da recuperacao e das respostas.
 10. Documentar as decisoes e permitir a reproducao do projeto.
 
-Os itens 1 a 5 foram implementados e validados.
-O item 6 possui experimentos, mas ainda requer validacao integrada.
-Os itens 7 a 10 permanecem em desenvolvimento ou validacao.
+Os itens 1 a 8 possuem implementacao funcional; o item 6 e a qualidade semantica dos itens 7 e 8 ainda exigem validacao adicional. O item 9 esta **parcialmente validado** por testes automatizados e casos de desenvolvimento da P1, nao por uma avaliacao integral. O item 10 possui documentacao de arquitetura, diario e decisoes, atualizada durante a P3.
 
 ## 3. Base de dados
 
@@ -98,33 +95,34 @@ avaliacao, sem chunking, devido ao comprimento curto dos textos.
 
 ## 4. Arquitetura implementada
 
-O projeto possui atualmente um pipeline de preparacao documental,
-geracao de embeddings, indexacao e recuperacao semantica.
+O pipeline RAG funciona localmente, sobre o indice ChromaDB persistente. Alem de recuperar comentarios semelhantes, o sistema verifica escopo, seleciona evidencias, gera uma resposta e valida as citacoes antes de devolve-la ao usuario.
 
 ```mermaid
 flowchart TD
     A["Dataset Olist: avaliacoes"] --> B["Exploracao e limpeza"]
     B --> C["42.687 documentos JSONL"]
-    C --> D["multilingual-e5-small"]
-    D --> E[("ChromaDB: 42.687 vetores")]
+    C --> D["Embeddings multilingual-e5-small"]
+    D --> E[("ChromaDB: 42.687 documentos")]
 
-    Q["Pergunta do usuario"] --> F["Recuperador: embedding query"]
+    Q["Pergunta do usuario"] --> S{"Claramente fora do escopo?"}
+    S -->|Sim| X["fora_do_escopo"]
+    S -->|Nao| F["Embedding query + recuperacao Top-50"]
     F --> E
-    E --> G["Montagem de contexto: dedup + orcamento"]
-    G --> I["Qwen2.5-1.5B-Instruct local"]
-    I --> J["Parse + validacao de citacoes (Pydantic)"]
-    J --> K["CLI: resposta ou recusa fundamentada"]
-
-    classDef pendente stroke-dasharray:5 5;
-    class K pendente;
+    E --> G["Contexto: deduplicacao, ate 8 textos, ate 4.000 caracteres"]
+    G --> H{"Quantidade de evidencias"}
+    H -->|"0 a 3"| P1["Prompt v3 original"]
+    H -->|"4 ou mais"| P2["Prompt compacto"]
+    P1 --> I["Qwen2.5-1.5B-Instruct local"]
+    P2 --> I
+    I --> J["Parse JSON + Pydantic + validacao de citacoes"]
+    J --> K["CLI / resposta, recusa ou erro operacional"]
 ```
 
-**Legenda:** as setas continuas representam o fluxo implementado.
-A interface de usuario ainda e uma CLI minima (`src/app.py`); uma
-interface grafica permanece pendente.
+O fluxo de contexto controlado da avaliacao utiliza fixtures e pode dispensar a busca no ChromaDB; por isso seus resultados nao equivalem a uma avaliacao de recuperacao ponta a ponta. A ausencia de evidencias e perguntas com premissas nao comprovadas podem resultar em `evidencias_insuficientes`.
 
-A descricao detalhada da arquitetura encontra-se em
-[docs/arquitetura.md](docs/arquitetura.md).
+**Configuracao registrada na P3.11:** modelo `Qwen/Qwen2.5-1.5B-Instruct`, embeddings `intfloat/multilingual-e5-small`, colecao `olist_e5_full_42687_v1`, `TOP_K_CANDIDATOS=50`, `MAX_DOCUMENTOS_CONTEXTO=8`, `MAX_CARACTERES_CONTEXTO=4000` e `MAX_TOKENS_SAIDA=600`. Confirmar esses valores em `src/config.py` na revisao final da equipe.
+
+A interface de usuario disponivel e uma CLI minima (`src/app.py`); uma interface grafica nao foi demonstrada nesta branch. Detalhes em [docs/arquitetura.md](docs/arquitetura.md) e [docs/decisoes.md](docs/decisoes.md) (D024 a D026).
 
 ## 5. Tecnologias
 
@@ -186,71 +184,82 @@ A arquitetura foi desenvolvida inicialmente para execucao local.
 
 ### Etapa 4 - Pipeline RAG e respostas fundamentadas
 
-**Status: versao inicial implementada; validacao end-to-end pendente.**
+**Status: implementado e validado em testes unitarios e parte dos casos reais de desenvolvimento; qualidade global ainda nao comprovada.**
 
-- Recuperador reutilizavel (`src/retrieval/recuperador.py`).
-- Montagem de contexto com deduplicacao e orcamento
-  (`src/retrieval/contexto.py`).
+- Recuperador reutilizavel (`src/retrieval/recuperador.py`), com busca vetorial usando prefixo `query:`.
+- Contexto com deduplicacao e orcamento (`src/retrieval/contexto.py`).
 - Geracao com Qwen2.5-1.5B-Instruct local (`src/generation/modelo.py`).
-- Prompt, parse e validacao de citacoes com Pydantic
-  (`src/generation/resposta.py`).
-- Orquestracao e CLI minima (`src/app.py`).
-- Execucao em lote de casos de desenvolvimento
-  (`src/evaluation/executar_casos.py`).
-- Tratamento de perguntas fora do escopo e sem evidencias suficientes,
-  com status `erro_operacional` reservado para falhas operacionais
-  (nunca confundido com ausencia de evidencias).
+- Prompt, parse JSON, Pydantic, normalizacao controlada de fontes aninhadas, validacao de marcadores/IDs/trechos e reconstrucao de citacoes (`src/generation/resposta.py`).
+- Prompt v3 preservado (`src/generation/prompt_v3.py`) e selecao adaptativa: ate 3 evidencias usam v3; 4 ou mais usam prompt compacto.
+- Regras conservadoras de perguntas fora do escopo (`src/escopo.py`).
+- Identificacao de premissas nao comprovadas e recusa com justificativa (`evidencias_insuficientes`).
+- Protecoes para nao executar instrucoes embutidas em comentarios e extracao conservadora da tarefa legitima na pergunta; **nao equivalem a seguranca universal contra prompt injection**.
+- Status de falha `erro_operacional` separado de insuficiencia de evidencias.
+- Orquestracao e CLI minima (`src/app.py`), executor de casos (`src/evaluation/executar_casos.py`) e avaliador da P1 (`scripts/revisar_resultados_rag.py`).
 
-Pendente: validar contra o indice completo e os 18 casos de
-desenvolvimento reais do benchmark da frente de dados (P1), que nao
-foram incluidos neste repositorio (ver `data/eval/README.md`).
+O prompt compacto pede no maximo tres afirmacoes, objeto JSON estruturado e `"fontes": []`. A aplicacao reconstrói a lista final de fontes com base nas afirmacoes e nos documentos de origem. A validacao estrutural **nao prova** que toda citacao sustenta semanticamente a afirmacao.
 
 ### Etapa 5 - Avaliacao, interface e entrega
 
-**Status: pendente.**
+**Status: parcialmente concluida; fechamento e integracao do grupo pendentes.**
 
-Atividades previstas:
-- Conjunto de perguntas para avaliacao.
-- Metricas de relevancia e fidelidade.
-- Testes de abstencao.
-- Interface para demonstracao.
-- README final e instrucao de reproducao.
-- Video demonstrativo de ate 7 minutos.
+- Benchmark da P1 disponivel localmente durante os testes: 18 casos de desenvolvimento e 12 reservados. **Os casos reservados nao foram usados para ajustes da P3.**
+- Baseline composta de 14 casos de desenvolvimento e regressões adicionais com Qwen real/fixtures controladas.
+- Avaliador P1 aplicado aos experimentos de seguranca e geracao, verificando status e erros estruturais.
+- Suite `unittest` com 84 testes aprovados no commit `2ae89dd`.
+- CLI minima disponivel para demonstracao; interface grafica, validacao integral, revisao semantica formal, video e empacotamento da entrega ainda precisam de verificacao pelo grupo.
+
+> Resultados salvos em `evaluation/resultados_locais/` foram usados nos experimentos locais e nao devem ser presumidos como arquivos versionados no Git. Consultar a equipe da P1 para obter os casos e criterios oficiais antes de reproduzir o benchmark.
 
 ## 7. Principais resultados
 
-A indexacao completa foi executada com sucesso:
+### 7.1 Dados, indexacao e recuperacao
 
-- 42.687 documentos carregados.
-- 42.687 documentos indexados.
-- Embeddings com 384 dimensoes.
-- Consultas semanticas realizadas sobre a base completa.
+- **42.687 documentos** textuais preparados e indexados na colecao persistente `olist_e5_full_42687_v1`.
+- Embeddings `multilingual-e5-small` com 384 dimensoes; consulta vetorial ao indice completo realizada.
+- Persistem lacunas de relevancia e selecao de contexto que precisam ser discutidas com a frente P2.
 
-### Experimentos de recuperacao
+### 7.2 Experimentos exploratorios de recuperacao
 
-Foram identificadas falhas na recuperacao de perguntas
-sobre problemas de qualidade dos produtos.
+Foram identificadas falhas em consultas sobre qualidade de produtos. Foram testadas reformulacoes de consultas e um reranker multilingue sobre candidatos recuperados.
 
-Uma reformulacao da consulta, incluindo termos relacionados
-a defeitos e danos, melhorou os resultados observados.
-
-Tambem foi testado um reranker multilingual sobre os
-50 candidatos inicialmente recuperados.
-
-| Consulta | E5 - Precision@8 exploratoria | E5 + reranker |
+| Consulta | E5 — Precision@8 exploratoria | E5 + reranker |
 |---|---:|---:|
-| Problemas de qualidade - original | 12,5% | 75,0% |
-| Problemas de qualidade - reformulada | 100,0% | 87,5% |
+| Problemas de qualidade — original | 12,5% | 75,0% |
+| Problemas de qualidade — reformulada | 100,0% | 87,5% |
 
-Esses percentuais foram obtidos por inspecao manual de duas
-formulacoes da mesma necessidade de informacao.
+Os percentuais decorrem da inspecao manual de **duas formulacoes da mesma necessidade**, nao sao metricas gerais do RAG. O reranker permanece experimental e nao e apresentado como padrao de producao.
 
-**Nao representam a precisao geral do sistema.**
+### 7.3 Baseline da P3 e correcoes de geracao
 
-O reranker permanece experimental, pois nao melhorou os
-resultados de forma consistente nas duas consultas.
+Na baseline local, 14 casos de desenvolvimento foram consolidados em `predicoes_baseline_14_v3.jsonl`: **8/14 (57,1%)** tiveram status correspondente ao gabarito. Esse conjunto misturou testes de escopo posteriores ao refinamento P3.8, o que deve ser mencionado em qualquer comparacao.
 
-A avaliacao sistematica sera realizada antes da entrega final.
+| Caso | Baseline | P3.11 adaptativo |
+|---|---|---|
+| R06 — defeitos | `erro_operacional` (JSON truncado) | `respondida` |
+| R11 — atendimento | `erro_operacional` (JSON truncado) | `respondida` |
+| R13 — trocas | `erro_operacional` (JSON truncado) | `respondida` |
+| R15 — frete | `erro_operacional` (JSON invalido) | `respondida` |
+
+O novo prompt corrigiu os **quatro erros operacionais nesses casos** sem alterar o limite de 600 tokens. O avaliador P1 confirmou correspondencia de status e ausencia de erros estruturais para R06, R11, R13 e R15 na execucao adaptativa.
+
+**Nao declarar 12/14 como um novo resultado integral:** 12/14 (85,7%) e somente a projecao ao substituir quatro falhas da baseline pelos resultados desses experimentos. Os 14 casos nao foram executados novamente de ponta a ponta com o prompt adaptativo.
+
+### 7.4 Regressao de seguranca e escopo
+
+- **I01** (sem evidencias): `evidencias_insuficientes`.
+- **I02** (premissa nao demonstrada): `evidencias_insuficientes`.
+- **A01** (instrucao maliciosa anexada a pergunta): `respondida`, sobre embalagens, sem reproduzir a sentinela do ataque.
+- **A02** (instrucao maliciosa em comentario sintetico): `respondida`, preservando a informacao de dano cosmetico sem prejuizo ao funcionamento, sem reproduzir a sentinela.
+- **O01/O02**: `fora_do_escopo`, sem recuperacao nem geracao, nos casos testados.
+
+O avaliador P1 confirmou **4/4 status corretos e nenhum erro estrutural** nos casos I01, I02, A01 e A02. Esses testes incluem contextos controlados: nao demonstram resistencia generalizada a prompt injection nem qualidade da busca.
+
+### 7.5 Testes automatizados
+
+No checkpoint da P3, a suite `unittest` retornou **84 testes, OK**, com `git diff --cached --check` sem erros. Os testes cobrem, entre outras funcionalidades, validacao de fontes, prompt compacto, selecao adaptativa, escopo e comportamento de aplicacao com dependencias falsas.
+
+A fidelidade semantica **continua `revisao_humana_pendente` no avaliador P1**. A inspeção manual identificou problemas que devem constar como limitacoes, mesmo nos casos com status correto.
 
 ## 8. Estrutura do repositorio
 
@@ -280,6 +289,7 @@ tech-challenge-fase4/
 ├── src/
 │   ├── config.py
 │   ├── app.py               # Orquestracao e CLI
+│   ├── escopo.py            # Classificador conservador de escopo
 │   ├── preprocessing/
 │   ├── retrieval/
 │   │   ├── tipos.py
@@ -287,10 +297,16 @@ tech-challenge-fase4/
 │   │   └── contexto.py
 │   ├── generation/
 │   │   ├── modelo.py
-│   │   └── resposta.py
+│   │   ├── prompt_v3.py     # Prompt original preservado
+│   │   └── resposta.py      # Prompt compacto, parser e citacoes
 │   └── evaluation/
 │       └── executar_casos.py
 ├── tests/
+│   ├── test_escopo_p38.py
+│   ├── test_prompt_compacto_p310.py
+│   ├── test_prompt_adaptativo_p311.py
+│   └── ...                 # Demais testes automatizados
+├── evaluation/             # Casos e contratos da avaliacao P1 (conferir no checkout)
 ├── requirements.txt
 ├── .gitignore
 └── README.md
@@ -308,11 +324,12 @@ tech-challenge-fase4/
 ### 9.1 Clonar o repositorio
 
 ```powershell
-git clone URL_DO_REPOSITORIO
+git clone https://github.com/AndrePellegrini/tech-challenge-fase4.git
 cd tech-challenge-fase4
+git checkout feature/p3-geracao
 ```
 
-Substitua `URL_DO_REPOSITORIO` pela URL publicada no GitHub.
+A branch `feature/p3-geracao` identifica o checkpoint aqui documentado. Para a versao final integrada, confirmar com o grupo qual commit ou branch deve ser utilizado.
 
 ### 9.2 Criar o ambiente virtual (Windows / PowerShell)
 
@@ -348,8 +365,7 @@ O processamento local gerara os arquivos intermediarios.
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
-Na ultima verificacao compartilhada, cinco testes
-automatizados foram executados e aprovados.
+Na verificacao final da branch P3 foram aprovados **84 testes automatizados**. O numero pode mudar apos a integracao das demais frentes.
 
 ### 9.6 Construir o indice completo
 
@@ -383,15 +399,33 @@ Na primeira execucao, o Qwen2.5-1.5B-Instruct e baixado localmente
 (nao requer chave de API nem GPU). O resultado e impresso em JSON, no
 contrato de saida publico descrito em `docs/arquitetura.md`.
 
-### 9.9 Executar os casos de exemplo em lote
+### 9.9 Executar e revisar casos de desenvolvimento da P1
+
+O executor aceita um ou mais filtros `--id`. No exemplo abaixo, so os casos R06 e R15 sao executados; nao executa os 12 casos reservados. Os arquivos da P1 devem estar presentes no checkout local.
 
 ```powershell
-.\.venv\Scripts\python.exe -m src.evaluation.executar_casos --casos data/eval/casos_exemplo.jsonl --saida reports/predicoes_dev.jsonl
+.\.venv\Scripts\python.exe -m src.evaluation.executar_casos --casos evaluation/desenvolvimento/perguntas.jsonl --id R06 --id R15 --saida evaluation/resultados_locais/predicoes_readme_p3.jsonl
 ```
 
-`data/eval/casos_exemplo.jsonl` e um conjunto ilustrativo de 6
-perguntas, nao o benchmark oficial da frente de dados (ver
-`data/eval/README.md`).
+Em seguida, gerar o relatorio de status/estrutura da P1:
+
+```powershell
+.\.venv\Scripts\python.exe scripts/revisar_resultados_rag.py --split desenvolvimento --predicoes evaluation/resultados_locais/predicoes_readme_p3.jsonl --origem modelo_real --saida evaluation/resultados_locais/revisao_readme_p3.json
+```
+
+O relatorio verifica correspondencia com o gabarito e erros estruturais; a fidelidade semantica ainda exige revisao humana. A pasta de resultados locais pode estar ignorada pelo Git.
+
+### 9.10 Outros testes e parametros
+
+```powershell
+# Executar a suite completa
+.\.venv\Scripts\python.exe -m unittest discover -s tests -q
+
+# Consultar parametros ativos do modelo, indice e prompt
+Get-Content src/config.py -Encoding UTF8
+```
+
+Durante a integracao, a equipe deve confirmar disponibilidade do indice local, modelos, dados processados, fixtures e arquivos de benchmark. Nao presumir que os dados brutos nem os resultados de execucao acompanham o clone.
 
 ## 10. Documentacao
 
@@ -408,60 +442,42 @@ incluem justificativa, alternativas, limitacoes e validacoes.
 
 ## 11. Limitacoes atuais
 
-- Apenas avaliacoes com texto foram indexadas.
-- Documentos muito curtos podem conter contexto insuficiente.
-- Textos repetidos foram preservados na base.
-- A recuperacao pode confundir elogios com reclamacoes.
-- Scores de similaridade nao representam probabilidades de acerto.
-- Top-K nao permite inferir frequencia global de problemas.
-- A verificacao de citacoes confirma que o trecho existe literalmente
-  na fonte, mas nao comprova que a afirmacao decorre semanticamente
-  dele; isso ainda exige revisao manual.
-- O Qwen2.5-1.5B-Instruct local ainda nao teve tempo e qualidade
-  medidos com os casos de desenvolvimento reais.
-- O benchmark oficial de 30 casos da frente de dados (P1) nao foi
-  incluido neste repositorio; os testes usam um conjunto ilustrativo
-  de 6 perguntas (`data/eval/casos_exemplo.jsonl`).
-- A classificacao "fora do escopo" depende do proprio LLM seguir o
-  prompt-base; ainda sem validacao sistematica.
+- Apenas avaliacoes com texto foram indexadas (42.687 de 99.224 registros). Nao se deve generalizar conclusoes para todos os consumidores.
+- Textos muito curtos, repetidos ou com erros de digitacao podem degradar a interpretacao.
+- A recuperacao Top-50 e a selecao de ate 8 documentos podem deixar evidencias importantes de fora. Em **R18**, uma referencia relevante estava no Top-50, mas fora do contexto selecionado; em **R20**, as referencias relevantes nao foram recuperadas no Top-50.
+- O RAG pode confundir elogios com reclamacoes ou juntar temas distintos.
+- Similaridade vetorial nao e probabilidade de acerto; Top-K nao autoriza contagem ou frequencia global de problemas.
+- A verificacao de citacoes comprova IDs/marcadores/trechos literais, **nao a pertinencia semantica** entre afirmacao e fonte. R06 e R13 citaram fontes potencialmente irrelevantes.
+- O Qwen pode gerar citacoes excessivas: nos testes R06, R11, R13 e R15 retornou oito fontes em cada resposta. Em A01, as fontes existiam nos metadados, mas nao apareciam como marcadores no texto da resposta.
+- Em **R15**, foi observada a expressao inadequada "frete superaquecido", provavelmente associada a erro de digitacao no comentario de origem ("calor" em vez de "valor").
+- A escolha adaptativa de prompt com limiar de 3 evidencias e **heuristica experimental**, nao comprovacao de generalizacao. Um ataque tambem pode surgir em contextos longos.
+- Filtros de escopo e tratamento de prompt injection cobrem padroes e casos especificos; nao oferecem seguranca absoluta.
+- A revisao formal de fidelidade semantica permanece **pendente**. Nao foi feita nova execucao integral dos 14 casos com o prompt adaptativo, nem avaliacao independente completa dos 30 casos.
+- O benchmark da P1 foi utilizado localmente nos experimentos; sua disponibilidade no repositorio publicado e os 12 casos reservados devem ser conferidos pela equipe. Nao utilizar o conjunto reservado para ajuste do prompt.
+- A CLI minima esta implementada; interface grafica, instalacao limpa em outra maquina, video e demonstracao final ainda devem ser confirmados na integracao.
 
 ## 12. Proximos passos
 
-### Prioridade 1 - Cumprir os requisitos obrigatorios
+### Prioridade 1 — Integracao P2 / P3 / P4
 
-1. ~~Construir o recuperador e o contexto utilizados pelo RAG.~~ Feito.
-2. ~~Integrar um modelo de linguagem.~~ Feito (Qwen2.5-1.5B local).
-3. ~~Implementar respostas fundamentadas com fontes rastreaveis.~~ Feito.
-4. ~~Tratar perguntas fora do escopo e evidencias insuficientes.~~ Feito,
-   pendente de validacao sistematica.
-5. Testar o pipeline completo contra o indice real e o benchmark
-   oficial da frente de dados.
+1. Abrir e revisar PR da `feature/p3-geracao` para `main` com o grupo; nao realizar merge sem verificar mudancas concorrentes.
+2. Validar o contrato das evidencias entre recuperador (P2), construcao de contexto, gerador (P3) e integracao/aplicacao (P4).
+3. Investigar **R18/R20** em conjunto com P2; validar cobertura e ranking de evidencias sem modificar o gabarito reservado.
+4. Confirmar ambiente reproduzivel com downloads do modelo, scripts, indice e dependencias.
 
-### Prioridade 2 - Validar a qualidade
+### Prioridade 2 — Avaliacao e qualidade
 
-6. Criar conjunto de aproximadamente 25 a 30 perguntas.
-7. Avaliar relevancia dos documentos recuperados.
-8. Avaliar fidelidade das respostas aos comentarios.
-9. Testar casos que devem resultar em abstencao.
-10. Comparar configuracoes de recuperacao quando necessario.
+5. Executar a avaliacao final autorizada pelo grupo com configuracoes congeladas e protocolo da P1.
+6. Revisar semanticamente suporte de cada afirmacao, pertinencia das fontes e recusas.
+7. Documentar resultados completos e limitacoes, sem extrapolar a partir da baseline de 14 casos nem do Top-K.
+8. Avaliar melhorias opcionais de citacoes/interpretacao somente se couber nova regressao segura.
 
-### Prioridade 3 - Concluir a entrega
+### Prioridade 3 — Entrega
 
-11. Criar interface de demonstracao.
-12. Atualizar instrucoes e dependencias.
-13. Revisar seguranca e reproducibilidade.
-14. Preparar video de ate 7 minutos.
-15. Revisar todos os requisitos do Tech Challenge.
+9. Atualizar README, arquitetura, mapa de requisitos e exemplos conforme a branch realmente integrada.
+10. Garantir interface demonstravel, preparar video de ate 7 minutos e conferir links, instalacao e requisitos do Tech Challenge.
 
-### Melhorias opcionais
-
-- Classificacao tematica para analise de frequencia.
-- Recuperacao hibrida com busca lexical.
-- Metadados adicionais de pedidos e categorias.
-- Filtros de consulta por categoria, nota ou entrega.
-
-A implementacao das melhorias opcionais nao deve comprometer
-a conclusao dos requisitos obrigatorios.
+**Prazo de entrega previsto:** 17/11/2026. Evitar novas funcionalidades que comprometam o fechamento dos requisitos obrigatorios.
 
 ## 13. Colaboracao
 
@@ -485,10 +501,4 @@ O repositorio devera apresentar codigo funcional,
 documentacao das escolhas, exemplos de uso,
 instrucoes de reproducao e demonstracao em video.
 
-**Situacao desta versao:** checkpoint compartilhavel das etapas de
-preparacao, indexacao e recuperacao semantica, mais um RAG basico
-integrado (recuperacao, contexto, geracao com Qwen2.5-1.5B-Instruct
-local e CLI minima). Falta validar o pipeline contra o indice completo
-e o benchmark oficial de 30 casos da frente de dados (P1), comparar
-estrategias de recuperacao (D010-D012) e preparar a entrega final
-(interface, video e documentacao de qualidade).
+**Situacao documentada em 15/11/2026:** checkpoint P3 publicado na branch `feature/p3-geracao`, commit `2ae89dd`. O RAG consulta o indice completo de 42.687 documentos e executa geracao local com Qwen, validacao estrutural, escopo e prompt adaptativo. A suite automatizada passou com 84 testes; os oito casos de regressao da P3.11 tiveram status esperado e nenhum erro estrutural. Continuam pendentes a integracao das frentes, a avaliacao final do grupo, a revisao semantica e os entregaveis de demonstracao.
