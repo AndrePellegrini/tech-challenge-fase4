@@ -1,99 +1,50 @@
-# Matriz de rastreabilidade - Fase 4
+# Matriz de rastreabilidade — Fase 4
 
-Fonte primaria: `[IAST] - Tech Challenge - Fase 4.pdf`, paginas 4 a 10.
+Fonte primária: `[IAST] - Tech Challenge - Fase 4.pdf`, páginas 4 a 10.
+Situação revisada em 16/11/2026 (entrega final).
 
-| ID | Exigencia no enunciado | Etapa | Materiais FIAP | Evidencia futura | Estado |
-|---|---|---|---|---|---|
-| R01 | Selecao dos dados e conteudos textuais | 1 | NLP aulas 1-2 | Perfil e recorte justificado | Concluido |
-| R02 | Limpeza, preparacao e valores ausentes | 1-2 | NLP aula 2 | Codigo e contagens antes/depois | Concluido |
-| R03 | Organizacao dos documentos | 2 | NLP aulas 2-4 | Documentos com IDs e metadata | Concluido |
-| R04 | Criacao de embeddings | 3 | NLP aula 4; LangChain aula 3 | Modelo, dimensao e teste | Concluido |
-| R05 | Armazenamento e indexacao | 3 | LangChain aula 3 | Indice reproduzivel | Concluido |
-| R06 | Processamento/transformacao da pergunta | 4 | IA Generativa aula 3 | Consulta e log | Concluido (`Recuperador.buscar`) |
-| R07 | Recuperacao semantica e selecao de comentarios | 3-4 | LangChain aula 3; GenAI aula 2 | Top-K com ids/scores | Concluido (`recuperador.py`, `contexto.py`) |
-| R08 | Contexto e geracao de resposta | 4 | LangChain aulas 1-2 | RAG funcionando | Implementado; validacao end-to-end pendente |
-| R09 | Resposta com evidencias rastreaveis | 4-5 | GenAI aulas 2-3 | ID, trecho e fonte | Implementado (`resposta.py`, validacao de citacoes) |
-| R10 | Faltam evidencias ou fora do escopo | 5 | GenAI aulas 3 e 6 | Testes de nao resposta | Implementado; validacao sistematica pendente |
-| R11 | Repositorio publico, README, instalacao e reproducao | 1-6 | Engenharia de software | GitHub e documentacao | Em andamento |
-| R12 | Video <= 7 minutos com demonstracao e decisoes | 7 | Entregaveis | Link do video | A fazer |
-| E01 | Metadados adicionais: nota, entrega, categorias, periodo | Opcional | LangChain aula 3 | Filtros e comparacoes | Nao iniciado |
+## 1. Requisitos obrigatórios
 
-## Criterios de avaliacao interpretados do enunciado
+| ID | Exigência do enunciado | Estado | Evidência |
+|---|---|---|---|
+| R01 | Seleção dos dados textuais | Concluído | `reports/perfil_olist.md`; D001, D004 |
+| R02 | Limpeza, preparação e valores ausentes | Concluído | `src/preprocessing/documentos.py`; `reports/perfil_documentos.md`; D002, D006 |
+| R03 | Organização dos documentos | Concluído | JSONL com `id`, `page_content`, `metadata`; D005; hash conferido em `evaluation/manifesto_congelado.json` |
+| R04 | Criação dos embeddings | Concluído | E5-small, `passage:`/`query:`, 384 dim.; D007 |
+| R05 | Armazenamento e indexação | Concluído | ChromaDB persistente, 42.687 documentos; D008, D009 |
+| R06 | Transformação da pergunta | Concluído | Prefixo `query:` e normalização (`Recuperador.buscar`); remoção de comandos de sobrescrita (`extrair_tarefa_legitima`); D024 |
+| R07 | Recuperação semântica e seleção | Concluído | `src/retrieval/recuperador.py` (Top-50), `src/retrieval/contexto.py` (deduplicação, 8 textos / 4.000 caracteres); D014, D015 |
+| R08 | Construção do contexto e geração | Concluído | `construir_prompt` + Qwen2.5-1.5B local; D016, D026; 18 casos executados ponta a ponta |
+| R09 | Respostas com evidências rastreáveis | Concluído | Afirmações→marcadores→`document_id`/trecho literal; validação de citações; 0 erros estruturais em 18 casos |
+| R10 | Evidências insuficientes / fora do escopo | Concluído | `src/escopo.py`, status `evidencias_insuficientes`/`fora_do_escopo`; I01, I02, O01, O02 corretos; D023, D025 |
+| R11 | Repositório público, README, instalação e reprodução | Concluído | `README.md`, `docs/`, reprodução validada em máquina limpa (hash idêntico da base) |
+| R12 | Vídeo de até 7 minutos | Em preparação | Etapa seguinte à entrega do repositório |
+| E01 | Desafio adicional: metadados | Concluído (nota) | Filtro `--nota-min`/`--nota-max` (D027); exemplos E06–E08 em `docs/exemplos.md` |
 
-- Recuperacao relevante
-- Contexto pertinente
-- Fidelidade aos comentarios
-- Evitar afirmacoes inventadas
-- Evidencias identificaveis
-- Ausencia de evidencias tratada explicitamente
+## 2. Entregáveis do repositório (página 9)
 
-Observacao: nao ha modelo de embeddings, LLM ou interface especificos impostos pelo PDF.
+| Item exigido | Onde está |
+|---|---|
+| Código-fonte | `src/`, `scripts/` |
+| Instruções de instalação e execução | `README.md`, seções "Como executar" |
+| README explicando o projeto | `README.md` |
+| Descrição da arquitetura | `docs/arquitetura.md` e diagrama no README |
+| Tecnologias e bibliotecas | README, seção "Tecnologias"; `requirements.txt` |
+| Estratégia do pipeline RAG | README e `docs/arquitetura.md`, seção 4 |
+| Preparação da base | README e `docs/arquitetura.md`, seção 3; `docs/etapa2_guia.md`; `docs/datasheet_olist_p1.md` |
+| Justificativa das decisões técnicas | `docs/decisoes.md` (D001–D027) |
+| Exemplos de perguntas e respostas | `docs/exemplos.md` (execuções reais) |
+| Informações para reproduzir | README, seção "Como executar"; `evaluation/manifesto_congelado.json` |
 
+## 3. Critérios esperados (página 10)
 
-## Acompanhamento - Construcao da Base de Conhecimento
-
-### Requisito 1 - Construcao da base de conhecimento
-
-**Status:** preparacao documental, embeddings e indexacao concluidos.
-
-| Elemento exigido pela FIAP | Situacao | Evidencia |
+| Critério | Como é atendido | Evidência |
 |---|---|---|
-| Selecao dos dados | Concluido | `reports/perfil_olist.md` |
-| Limpeza e preparacao textual | Concluido | `src/preprocessing/documentos.py` |
-| Tratamento de valores ausentes | Concluido para o recorte textual | `reports/perfil_olist.md` |
-| Organizacao dos documentos | Concluido | `data/processed/reviews_documentos.jsonl` |
-| Justificativa de chunking | Concluido inicialmente | `docs/decisoes.md` - D005 |
-| Criacao dos embeddings | Concluido | `docs/decisoes.md` - D007, D009 |
-| Armazenamento e indexacao vetorial | Concluido | `docs/decisoes.md` - D008, D009 |
+| Recuperar conteúdos relevantes | E5 + ChromaDB, deduplicação, filtro por nota | 80,5% das citações pertinentes nos 12 casos respondíveis |
+| Construir contexto adequado | Orçamento de 8 textos / 4.000 caracteres, evidências em JSON | `src/retrieval/contexto.py` |
+| Gerar respostas coerentes com as evidências | Prompt restrito ao contexto, até 3 afirmações | 11/18 fiéis, 3 parciais, 2 com erro pontual, 2 falhas |
+| Evitar informações não fundamentadas | Validação literal de trechos e IDs | 0 erros estruturais |
+| Rastreabilidade dos insights | Afirmação→marcador→documento→review/pedido | Contrato de saída em `docs/arquitetura.md` |
+| Reconhecer falta de informação | Regras de escopo + status de recusa | I01, I02, O01, O02 corretos |
 
-### Requisito 2 - RAG basico integrado (recuperacao, contexto e geracao)
-
-**Status:** implementado; validacao end-to-end contra o indice completo
-e o benchmark oficial da frente de dados (P1) ainda pendente.
-
-| Elemento exigido pela FIAP | Situacao | Evidencia |
-|---|---|---|
-| Recuperador reutilizavel | Concluido | `src/retrieval/recuperador.py`, D014 |
-| Selecao de contexto sem copias desnecessarias | Concluido | `src/retrieval/contexto.py`, D015 |
-| Escolha e integracao do LLM | Concluido (Qwen2.5-1.5B local) | `src/generation/modelo.py`, D016 |
-| Resposta restrita as evidencias, com citacoes verificaveis | Concluido | `src/generation/resposta.py`, D016 |
-| Reconhecimento de evidencias insuficientes | Concluido | `src/app.py` |
-| Reconhecimento de perguntas fora do escopo | Concluido (via prompt-base do LLM) | `src/generation/resposta.py` |
-| Execucao por CLI | Concluido | `src/app.py` |
-| Predicoes salvas com case_id, status, ids e citacoes | Concluido | `src/evaluation/executar_casos.py` |
-| Validacao contra o indice completo e casos reais | Pendente | Requer dataset local e benchmark da P1 |
-
-### Evidencias da Etapa 2
-
-A base documental foi construida a partir de 42.687 registros
-textuais da Olist, produzindo 42.687 documentos estruturados.
-
-A estrategia inicial preserva uma avaliacao por documento,
-sem fragmentacao em chunks.
-
-Os metadados mantem informacoes para rastrear as fontes.
-
-As principais decisoes estao registradas em:
-
-- D001: analise inicial dos textos.
-- D002: preservacao de texto e identificadores.
-- D003: selecao futura de API e banco vetorial.
-- D004: selecao dos registros textuais.
-- D005: ausencia de chunking inicial.
-- D006: preservacao de repeticoes e limites do recorte textual.
-
-### Pendencias dos requisitos
-
-O Requisito 1 esta implementado e documentado (D007-D009); a qualidade
-da recuperacao continua em avaliacao experimental (D010-D012).
-
-O Requisito 2 (RAG basico integrado) esta implementado, mas ainda
-precisa de:
-
-1. Validacao contra o indice vetorial completo nesta maquina.
-2. Execucao dos 18 casos de desenvolvimento reais da frente de dados (P1).
-3. Medicao de tempo e qualidade do Qwen2.5-1.5B-Instruct local.
-4. Comparacao sistematica de estrategias de recuperacao antes da Etapa 3
-   (E5 puro vs. BM25 + RRF, conforme o PDF de entrega P1).
-5. Congelamento de configuracao, prompt e modelo antes dos 12 casos
-   reservados para a avaliacao final.
+Detalhes da avaliação: [`reports/avaliacao_p4_desenvolvimento.md`](../reports/avaliacao_p4_desenvolvimento.md).

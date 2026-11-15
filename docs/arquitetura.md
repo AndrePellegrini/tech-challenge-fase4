@@ -1,341 +1,136 @@
+# Arquitetura Técnica — Voice of Customer Intelligence com RAG
 
-# Arquitetura Tecnica - Voice of Customer Intelligence com RAG
+**Versão:** 1.0.0 (entrega final)
+**Data da revisão:** 16/11/2026
+**Estado:** pipeline completo implementado e executado ponta a ponta sobre o índice de 42.687 documentos; avaliação dos 18 casos de desenvolvimento registrada em [`reports/avaliacao_p4_desenvolvimento.md`](../reports/avaliacao_p4_desenvolvimento.md).
 
-**Versao:** 0.1.0
+## 1. Visão geral
 
-**Data da revisao:** 04/11/2026
+A solução tem dois fluxos:
 
-**Estado:** infraestrutura de dados e recuperacao implementada;
-integracao generativa pendente.
+- **Pipeline offline** — transforma o CSV de avaliações da Olist em documentos rastreáveis, gera embeddings e persiste o índice vetorial. Executado uma vez por máquina.
+- **Pipeline de consulta** — recebe a pergunta, faz a triagem de escopo, recupera avaliações semelhantes (com filtro opcional por nota), monta o contexto, gera a resposta com um LLM local e valida estrutura e citações antes de devolvê-la.
 
-## 1. Visao geral
+Tudo roda localmente, em CPU, sem chave de API.
 
-A arquitetura utiliza um pipeline offline para preparar as
-avaliacoes e construir o indice vetorial e um fluxo de consulta
-para recuperar comentarios semanticamente relevantes.
-
-A solucao foi organizada para permitir a integracao posterior
-de um LLM, controles de evidencias e interface de usuario.
-
-## 2. Diagrama da arquitetura atual
+## 2. Diagrama
 
 ```mermaid
 flowchart TD
-    subgraph OFFLINE["Pipeline offline - Implementado"]
-        A["Olist: CSV de avaliacoes"]
-        B["Exploracao e selecao"]
-        C["CSV preparado: 42.687"]
-        D["Construcao documental"]
-        E["JSONL: 42.687 documentos"]
-        F["E5 Small: passage:"]
-        G[("ChromaDB persistente")]
-        A --> B --> C --> D --> E --> F --> G
+    subgraph OFFLINE["Pipeline offline"]
+        A["olist_order_reviews_dataset.csv<br/>99.224 avaliações"]
+        B["explorar_avaliacoes.py<br/>seleção de registros com texto"]
+        C["construir_base.py<br/>42.687 documentos JSONL"]
+        D["E5-small: 'passage: ' + texto<br/>384 dimensões, normalizado"]
+        E[("ChromaDB persistente<br/>olist_e5_full_42687_v1<br/>cosseno + metadados")]
+        A --> B --> C --> D --> E
     end
 
-    subgraph CONSULTA["Pipeline de consulta - Validado em experimentos"]
-        Q["Pergunta em portugues"]
-        H["E5 Small: query:"]
-        I["Busca por cosseno"]
-        J["Top-K com textos e metadados"]
-        K["Reformulacao / Reranking experimental"]
-        Q --> H --> I --> J
-        J -.-> K
+    subgraph CONSULTA["Pipeline de consulta (src/app.py)"]
+        Q["Pergunta + filtro opcional de nota"]
+        S{"src/escopo.py<br/>claramente fora do escopo?"}
+        X["fora_do_escopo<br/>(sem busca, sem LLM)"]
+        R["Recuperador.buscar<br/>'query: ' + pergunta<br/>Top-50 + where review_score"]
+        CT["montar_contexto<br/>deduplicação por hash<br/>até 8 textos / 4.000 caracteres<br/>marcadores F1..F8"]
+        P{"Nº de evidências"}
+        P1["Prompt v3<br/>(0 a 3 evidências)"]
+        P2["Prompt compacto<br/>(4 ou mais)"]
+        L["Qwen2.5-1.5B-Instruct local<br/>decodificação determinística"]
+        V["Parse JSON + Pydantic<br/>validação de marcadores, IDs e trechos literais<br/>reconstrução das fontes"]
+        O["Saída: status, resposta, afirmações→fontes,<br/>retrieved_ids, context_ids"]
+        Q --> S
+        S -->|Sim| X
+        S -->|Não| R --> CT --> P
+        P --> P1 --> L
+        P --> P2 --> L
+        L --> V --> O
     end
 
-    G --> I
-
-    subgraph FUTURO["Pipeline RAG - Pendente de integracao"]
-        L["Selecao e validacao de evidencias"]
-        M["Montagem do contexto"]
-        N["LLM gerador"]
-        O["Resposta com citacoes ou abstencao"]
-        P["Interface"]
-        L --> M --> N --> O --> P
-    end
-
-    J -.-> L
-    K -.-> L
+    E --> R
 ```
-
-As linhas continuas representam componentes implementados e
-executados. As conexoes tracejadas representam integracoes
-planejadas ou experimentais.
 
 ## 3. Pipeline offline
 
-### 3.1 Exploracao dos dados
-
-Arquivo: `scripts/explorar_avaliacoes.py`
-
-Entrada:
-`data/raw/olist_order_reviews_dataset.csv`
-
-Saida:
-`data/processed/reviews_preparadas.csv`
-
-Responsabilidades:
-- Identificar registros com conteudo textual.
-- Preservar os campos originais necessarios.
-- Criar identificadores tecnicos.
-- Produzir relatorio agregado de qualidade.
-
-Resultado: 42.687 registros aproveitaveis.
-
-### 3.2 Construcao dos documentos
-
-Arquivos:
-- `src/preprocessing/documentos.py`
-- `scripts/construir_base.py`
-
-Entrada:
-`data/processed/reviews_preparadas.csv`
-
-Saida:
-`data/processed/reviews_documentos.jsonl`
-
-Cada documento contem:
-
-- `id`: identificador tecnico.
-- `page_content`: titulo e/ou comentario.
-- `metadata`: informacoes de origem e caracteristicas.
-
-Metadados preservados:
-- document_id
-- review_id
-- order_id
-- review_score
-- review_creation_date
-- tipo_texto
-- fonte
-- n_palavras
-- hash_texto
-
-Decisoes:
-- Um documento por avaliacao textual.
-- Sem chunking inicialmente.
-- Sem remocao automatica de textos repetidos.
-- Preservacao de negacoes e informacoes relevantes.
-
-Resultado: 42.687 documentos.
-
-### 3.3 Geracao de embeddings
-
-Modelo:
-`intfloat/multilingual-e5-small`
-
-Configuracao:
-- 384 dimensoes.
-- Prefixo `passage:` nos documentos.
-- Prefixo `query:` nas perguntas.
-- Embeddings normalizados.
-
-A geracao de embeddings transforma textos em vetores
-numericos para comparacao semantica.
-
-### 3.4 Indexacao vetorial
-
-Arquivo:
-`scripts/indexar_base_completa.py`
-
-Banco:
-ChromaDB.
-
-Colecao:
-`olist_e5_full_42687_v1`
-
-Configuracao:
-- Cliente persistente local.
-- Distancia de cosseno.
-- Insercao em lotes de 128 documentos.
-- Inferencia em lotes de 32 textos.
-- Processamento incremental.
-- Verificacao de identificadores.
-- Assinatura SHA-256 do arquivo de origem.
-
-Resultado: 42.687 documentos indexados.
-
-O indice completo e mantido em:
-
-`data/vectorstore/chroma_e5_completo/`
-
-Essa pasta e local e nao e versionada no Git.
-
-## 4. Pipeline de consulta implementado
-
-Fluxo de um experimento:
-
-1. Receber pergunta em portugues.
-2. Adicionar prefixo `query:`.
-3. Gerar vetor da pergunta com o modelo E5.
-4. Consultar o ChromaDB por similaridade de cosseno.
-5. Recuperar comentarios e metadados.
-6. Ordenar os candidatos pela proximidade vetorial.
-7. Exibir evidencias para inspecao.
-
-Arquivos:
-- `scripts/testar_embeddings.py`
-- `scripts/testar_chromadb.py`
-- `scripts/auditar_recuperacao.py`
-- `scripts/testar_reranker.py`
-
-### 4.1 Reformulacao de perguntas
-
-Foi observado que consultas mais especificas podem
-recuperar comentarios mais pertinentes.
-
-Entretanto, a reformulacao pode restringir o significado
-original da pergunta, devendo ser avaliada cuidadosamente.
-
-### 4.2 Reranking
-
-Modelo experimental:
-`cross-encoder/mmarco-mMiniLMv2-L12-H384-v1`
-
-Estrategia avaliada:
-- Recuperar Top-50 pelo E5.
-- Reordenar candidatos com cross-encoder.
-- Comparar Top-8 antes e depois.
-
-O reranker melhorou uma consulta sobre qualidade,
-mas reduziu a precisao observada em sua versao reformulada.
-
-Portanto, nao foi adotado como padrao definitivo.
-
-## 5. Fluxo generativo implementado
-
-Implementado em `src/app.py` (`processar_pergunta`), chamando os
-modulos abaixo. Carrega o modelo de embeddings, o indice e o LLM uma
-unica vez por processo.
-
-1. Validar a pergunta (vazia -> `erro_operacional` sem chamar o resto).
-2. Recuperar candidatos com `Recuperador.buscar`
-   (`src/retrieval/recuperador.py`). Falha operacional aqui sempre vira
-   `erro_operacional`, nunca `evidencias_insuficientes`.
-3. Selecionar evidencias distintas e dentro do orcamento com
-   `montar_contexto` (`src/retrieval/contexto.py`). Sem candidatos, o
-   fluxo retorna `evidencias_insuficientes` sem chamar o LLM.
-4. Montar o prompt com instrucoes e dados em blocos separados
-   (`construir_prompt`, `src/generation/resposta.py`).
-5. Gerar a resposta com o Qwen2.5-1.5B-Instruct local
-   (`GeradorQwenLocal.gerar`, `src/generation/modelo.py`).
-6. Interpretar a saida como JSON, validar a estrutura com Pydantic e
-   verificar se cada marcador, `document_id` e trecho citados existem
-   literalmente no contexto enviado (`gerar_resposta`,
-   `validar_citacoes`). Falha de parse ou de citacao vira
-   `erro_operacional`.
-7. Devolver o contrato de saida publico, com `retrieved_ids` (todos os
-   candidatos recuperados) e `context_ids` (os efetivamente enviados
-   ao LLM).
-
-Interface disponivel: CLI minima (`python -m src.app --pergunta "..."`).
-Execucao em lote dos casos de desenvolvimento:
-`src/evaluation/executar_casos.py`.
-
-O modelo gerador (Qwen2.5-1.5B-Instruct local) foi escolhido e
-integrado (D016), mas ainda nao teve tempo e qualidade medidos com os
-casos de desenvolvimento reais.
-
-## 6. Rastreabilidade
-
-A rastreabilidade deve utilizar preferencialmente:
-
-- Identificador tecnico do documento.
-- Identificador original da avaliacao.
-- Identificador do pedido.
-- Nota da avaliacao.
-- Data da avaliacao.
-- Texto recuperado.
-
-Os documentos poderao ser identificados no contexto
-por marcadores como F1, F2 e F3.
-
-Esses marcadores deverao corresponder a documentos reais
-e permitir verificar as informacoes apresentadas ao usuario.
-
-## 7. Limitacoes conhecidas
-
-### Representatividade
-
-A base textual contem 42.687 de 99.224 avaliacoes.
-Ela nao representa automaticamente a distribuicao
-de todos os registros originais.
-
-### Textos curtos e repetidos
-
-Existem 5.778 documentos com ate tres palavras e
-5.975 ocorrencias adicionais de textos repetidos.
-
-Os registros originais foram preservados.
-
-### Similaridade e intencao
-
-A proximidade vetorial pode recuperar comentarios
-sobre o mesmo tema, mas com significado ou polaridade
-inadequados para a pergunta.
-
-### Frequencia de reclamacoes
-
-Os resultados Top-K de uma busca vetorial nao
-comprovam frequencias globais.
-
-Perguntas quantitativas exigirao contagem sobre
-um conjunto adequadamente classificado ou filtrado.
-
-### Evidencias insuficientes
-
-A deteccao de ausencia de evidencias ainda sera
-implementada no pipeline generativo.
-
-## 8. Organizacao e versionamento
-
-Codigo, documentacao, testes e relatorios agregados
-serao versionados no GitHub.
-
-Arquivos nao versionados:
-- Dados brutos.
-- CSVs preparados.
-- Documentos JSONL com comentarios.
-- Bancos vetoriais locais.
-- Credenciais e variaveis de ambiente sensiveis.
-
-O repositorio devera fornecer instrucoes para reconstruir
-o pipeline a partir do dataset oficial.
-
-## 9. Etapas seguintes
-
-### Obrigatorias
-
-1. ~~Integrar recuperacao e montagem de contexto.~~ Implementado em
-   `src/retrieval/recuperador.py` e `src/retrieval/contexto.py` (D014, D015).
-2. ~~Escolher e integrar o LLM.~~ Implementado em
-   `src/generation/modelo.py` com Qwen2.5-1.5B-Instruct local (D016).
-3. ~~Implementar citacoes e verificacao de evidencias.~~ Implementado em
-   `src/generation/resposta.py`, com validacao de marcador, document_id
-   e trecho literal (D016).
-4. Implementar tratamento de perguntas fora do escopo. Parcial: o
-   status `fora_do_escopo` e definido pelo proprio LLM a partir do
-   prompt-base; ainda sem validacao sistematica com casos reais.
-5. Implementar abstencao por insuficiencia de informacao. Parcial: sem
-   candidatos recuperados, o sistema abstem automaticamente, sem
-   chamar o LLM; a decisao de insuficiencia apos a recuperacao ainda
-   depende do LLM.
-6. Avaliar relevancia e fidelidade das respostas. Pendente: depende do
-   benchmark oficial de 18+12 casos da frente de dados (P1).
-7. Construir interface de demonstracao. Implementado como CLI minima
-   (`src/app.py`); interface grafica ainda pendente.
-8. Preparar documentacao final e video. Pendente.
-
-### Complementares
-
-- Recuperacao hibrida.
-- Classificacao tematica e analise de frequencia.
-- Integracao de dados de pedidos e produtos.
-- Filtros por atributos de pedidos e avaliacoes.
-
-## 10. Decisoes tecnicas
-
-As justificativas, alternativas e limitacoes
-estao registradas em `docs/decisoes.md`.
-
-Esse arquivo devera ser atualizado sempre que
-uma decisao relevante for tomada ou revisada.
+| Etapa | Arquivo | Entrada → Saída | Decisões |
+|---|---|---|---|
+| Seleção | `scripts/explorar_avaliacoes.py` | CSV bruto → `reviews_preparadas.csv` (42.687) | D001, D004 |
+| Documentos | `src/preprocessing/documentos.py`, `scripts/construir_base.py` | CSV preparado → `reviews_documentos.jsonl` | D002, D005, D006 |
+| Embeddings | `scripts/indexar_base_completa.py` | JSONL → vetores E5 (`passage:`) | D007 |
+| Indexação | `scripts/indexar_base_completa.py` | vetores + metadados → ChromaDB | D008, D009 |
+
+**Documento:** um por avaliação, sem chunking (mediana de 10 palavras, máximo de 50). Campos: `id`, `page_content` (título e/ou comentário) e `metadata` com `document_id`, `review_id`, `order_id`, `review_score`, `review_creation_date`, `tipo_texto`, `fonte`, `n_palavras`, `hash_texto`.
+
+**Limpeza:** apenas normalização de espaços e caracteres de controle. Acentos, pontuação, negações e textos repetidos são preservados (o texto original é a evidência citada).
+
+**Valores ausentes:** avaliações sem título e sem comentário (56.537) ficam fora do índice, porque não têm conteúdo textual a recuperar. Título ausente ou comentário ausente não descartam o registro.
+
+**Reprodutibilidade:** o JSONL gerado é determinístico; seu SHA-256 (`3519b8a9…`) está registrado em `evaluation/manifesto_congelado.json` e é conferido por `scripts/auditar_avaliacao_p1.py`. A indexação é incremental, verifica IDs e guarda a assinatura da origem nos metadados da coleção.
+
+## 4. Pipeline de consulta
+
+| Passo | Componente | Comportamento |
+|---|---|---|
+| 1. Validação | `src/app.py` | Pergunta vazia → `erro_operacional`. |
+| 2. Triagem de escopo | `src/escopo.py` | Regras conservadoras para pedidos claramente externos (capital, receita, orientação médica…). Bloqueia sem buscar e sem chamar o LLM. Perguntas ambíguas seguem adiante. |
+| 3. Transformação da pergunta | `Recuperador.buscar` | Prefixo `query:` do E5, embedding normalizado. Em `extrair_tarefa_legitima`, comandos explícitos de sobrescrita ("ignore as instruções…") são removidos antes do prompt. |
+| 4. Recuperação | `src/retrieval/recuperador.py` | Top-50 por similaridade de cosseno no ChromaDB. Filtro opcional `nota_min`/`nota_max` aplicado como `where` antes do ranking (D027). |
+| 5. Seleção do contexto | `src/retrieval/contexto.py` | Descarta duplicatas por `hash_texto`, limita a 8 textos e 4.000 caracteres, atribui marcadores F1…F8. Sem candidatos → `evidencias_insuficientes` sem chamar o LLM. |
+| 6. Prompt | `construir_prompt` em `src/generation/resposta.py` | Instruções na mensagem de sistema; pergunta e evidências em JSON na mensagem do usuário, tratadas como dados não confiáveis. Prompt v3 (≤ 3 evidências) ou compacto (≥ 4) — D026. |
+| 7. Geração | `src/generation/modelo.py` | Qwen2.5-1.5B-Instruct, `do_sample=False`, até 600 tokens novos; registra motivo de parada. |
+| 8. Validação | `gerar_resposta`, `validar_citacoes` | JSON → Pydantic; cada marcador, `document_id` e trecho deve existir literalmente no contexto; `respondida` exige afirmações com fonte. Falha → `erro_operacional` (nunca é confundida com falta de evidências). |
+| 9. Saída | `src/app.py` | Contrato abaixo. |
+
+### 4.1 Contrato de saída
+
+```json
+{
+  "status": "respondida | evidencias_insuficientes | fora_do_escopo | erro_operacional",
+  "resposta": "Há relatos de produtos que chegam sem funcionar [F1].",
+  "afirmacoes": [{"texto": "Há relatos de produtos que chegam sem funcionar.", "fontes": ["F1"]}],
+  "fontes": [{"marcador": "F1", "document_id": "olist_review_row_077709", "trecho": "Comentario: Veio com defeito. Não reconhece em nenhum computador e não funciona."}],
+  "retrieved_ids": ["os 50 candidatos recuperados"],
+  "context_ids": ["os documentos enviados ao LLM"],
+  "filtros": {"nota_max": 2},
+  "evidencias_contexto": [{"marcador": "F1", "document_id": "…", "review_score": 1, "similaridade": 0.87}]
+}
+```
+
+`filtros` e `evidencias_contexto` só aparecem quando um filtro de nota é usado; sem filtro, o contrato é idêntico ao avaliado pela P1.
+
+### 4.2 Rastreabilidade
+
+Cada afirmação aponta para marcadores; cada marcador corresponde a um `document_id` (`olist_review_row_NNNNNN`), que liga ao `review_id` e ao `order_id` originais. O trecho citado é sempre o texto literal da avaliação. `retrieved_ids` e `context_ids` permitem auditar recall e seleção de contexto separadamente.
+
+## 5. Interfaces
+
+- **CLI:** `python -m src.app --pergunta "..." [--nota-min N] [--nota-max N]`.
+- **Lote de avaliação:** `python -m src.evaluation.executar_casos` (casos da P1, modos `recuperacao_e_geracao` e `contexto_controlado`).
+- **Exemplos reprodutíveis:** `python scripts/gerar_exemplos.py` → `reports/exemplos_respostas.json` (apresentados em [`docs/exemplos.md`](exemplos.md)).
+
+## 6. Parâmetros (`src/config.py`)
+
+| Parâmetro | Valor |
+|---|---|
+| `MODELO_EMBEDDINGS` | `intfloat/multilingual-e5-small` (384 dim.) |
+| `COLECAO_CHROMA` | `olist_e5_full_42687_v1` |
+| `TOP_K_CANDIDATOS` | 50 |
+| `MAX_DOCUMENTOS_CONTEXTO` | 8 |
+| `MAX_CARACTERES_CONTEXTO` | 4.000 |
+| `MODELO_GERADOR` | `Qwen/Qwen2.5-1.5B-Instruct` |
+| `MAX_TOKENS_SAIDA` | 600 |
+| `VERSAO_PROMPT` | `v3-adaptativo-p311` |
+
+## 7. Limitações conhecidas
+
+- **Representatividade:** apenas 42.687 das 99.224 avaliações têm texto; conclusões não se estendem automaticamente a todos os clientes.
+- **Frequência:** o Top-K não mede frequência global; o prompt proíbe estimativas de proporção.
+- **Similaridade ≠ intenção:** o embedding aproxima temas, mas pode trazer polaridade errada (elogio em pergunta sobre reclamação). O filtro por nota mitiga esse efeito quando o usuário sabe o recorte desejado.
+- **Validação estrutural ≠ semântica:** a verificação garante que a fonte existe e que o trecho é literal, não que a fonte sustenta a afirmação. Há casos de citação excessiva (ver relatório de avaliação).
+- **Escopo:** as regras cobrem padrões específicos; demais perguntas externas dependem da decisão do LLM.
+- **Desempenho:** em CPU, cada pergunta leva da ordem de minutos, tempo dominado pela geração (valores medidos no relatório de avaliação).
+
+## 8. Versionamento
+
+Versionados: código, testes, documentação, benchmark da P1 (perguntas, gabaritos, fixtures, manifesto) e relatórios agregados. Fora do Git: dados brutos, CSV/JSONL processados, índice ChromaDB, modelos baixados e predições locais (`evaluation/resultados_locais/`).
+
+As justificativas, alternativas e limitações de cada escolha estão em [`docs/decisoes.md`](decisoes.md) (D001–D027).

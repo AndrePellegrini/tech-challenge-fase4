@@ -1,10 +1,13 @@
-# Casos de avaliacao
+# Casos de exemplo
 
-`casos_exemplo.jsonl` e um conjunto ilustrativo de 6 perguntas para testar
-o fluxo pergunta -> busca -> contexto -> LLM -> resposta de ponta a ponta.
+`casos_exemplo.jsonl` é um conjunto ilustrativo de 6 perguntas para testar
+rapidamente o fluxo pergunta -> busca -> contexto -> LLM -> resposta.
 
-Ele **nao substitui** o benchmark oficial de 30 casos (20 respondiveis, 4
-de insuficiencia, 3 fora do escopo e 3 adversariais) preparado pela frente
-de dados (P1), que e um artefato local e nao foi incluido neste
-repositorio. Usar o pacote `evaluation/` do P1 assim que estiver
-disponivel, preservando os 12 casos reservados para a avaliacao final.
+Ele **não substitui** o benchmark oficial da frente de dados (P1), que está
+versionado em [`evaluation/`](../../evaluation/README.md): 30 casos (20
+respondíveis, 4 de insuficiência, 3 fora do escopo e 3 adversariais),
+divididos em 18 de desenvolvimento e 12 reservados para a avaliação final.
+
+Para os exemplos usados na documentação, ver
+[`scripts/gerar_exemplos.py`](../../scripts/gerar_exemplos.py) e
+[`docs/exemplos.md`](../../docs/exemplos.md).
