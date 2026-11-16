@@ -1,0 +1,25 @@
+{
+  "data": "2026-11-07",
+  "casos": 30,
+  "composicao_por_split": {
+    "desenvolvimento": {
+      "respondível": 12,
+      "insuficiente": 2,
+      "fora_escopo": 2,
+      "adversarial": 2
+    },
+    "teste_reservado": {
+      "respondível": 8,
+      "insuficiente": 2,
+      "fora_escopo": 1,
+      "adversarial": 1
+    }
+  },
+  "referencias_exatas": true,
+  "hashes_preservados": true,
+  "evidencias_identicas_entre_splits": 0,
+  "fixture_sintetica_separada": true,
+  "curadoria_humana": "pendente",
+  "avaliacao_gerador": "pendente; sem implementação executável de geração no checkpoint",
+  "limite": "Teste reservado curado por IA e não usado para ajustar modelos; não é um teste cego com avaliador independente."
+}

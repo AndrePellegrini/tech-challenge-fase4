@@ -1,0 +1,22 @@
+{
+  "linhas_entrada": 42687,
+  "documentos_saida": 42687,
+  "somente_titulo": 1737,
+  "somente_comentario": 31121,
+  "titulo_e_comentario": 9829,
+  "review_ids_repetidos_no_recorte": 317,
+  "textos_repetidos": 5975,
+  "notas_invalidas": 0,
+  "datas_invalidas": 0,
+  "palavras_p50": 10,
+  "palavras_p95": 34,
+  "palavras_max": 50,
+  "documentos_ate_3_palavras": 5778,
+  "notas_base_textual": {
+    "1": 8829,
+    "2": 2165,
+    "3": 3643,
+    "4": 6274,
+    "5": 21776
+  }
+}

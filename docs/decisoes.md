@@ -976,3 +976,26 @@ casos de desenvolvimento preparados pela P1.
 - Os resultados nao demonstram generalizacao para perguntas ou ataques nao testados.
 
 **Proximos passos:** documentar os experimentos no diario, revisar a integracao com a recuperacao da P2, validar o estado final do Git e preparar commit na branch feature/p3-geracao, sem merge automatico na main.
+
+## D027 - Filtro opcional por nota da avaliacao (16/11/2026)
+
+**Contexto:** desafio adicional do enunciado (metadados e exploracao contextual). Perguntas como "quais problemas aparecem nas avaliacoes com nota baixa?" dependem de restringir a busca a um recorte da base, e nao apenas da similaridade semantica.
+
+**Decisao:** permitir filtrar a recuperacao pelo metadado `review_score` (1 a 5), com os parametros opcionais `nota_min` e `nota_max` em `Recuperador.buscar()` e `processar_pergunta()`, expostos na CLI como `--nota-min` e `--nota-max`.
+
+**Justificativa:**
+- `review_score` ja estava gravado como inteiro nos metadados do ChromaDB (D009); o filtro nao exige reindexacao nem novos dados.
+- O filtro e aplicado pelo ChromaDB antes do ranking (`where`), de modo que os 50 candidatos inteiros respeitam a faixa pedida, em vez de filtrar depois e esvaziar o contexto.
+- Os experimentos D011/D012 mostraram que o embedding confunde elogio e reclamacao quando os textos compartilham vocabulario. A nota e um sinal estruturado e independente do texto que reduz essa confusao em perguntas sobre insatisfacao (`--nota-max 2`) ou elogios (`--nota-min 4`).
+- A saida registra `filtros` e `evidencias_contexto` (marcador, documento, nota e similaridade), para que a resposta nao seja lida como valida para toda a base e para que se confira que cada fonte respeita o recorte.
+
+**Alternativas consideradas:**
+- Categoria do produto: exige juncao com `olist_order_items_dataset.csv` e `olist_products_dataset.csv` e reindexacao completa; adiada pelo prazo.
+- Periodo da compra: `review_creation_date` esta gravado como texto, e o ChromaDB so aplica `$gte`/`$lte` a numeros; exigiria reindexar com a data numerica.
+- Inferir a nota a partir da pergunta ("clientes insatisfeitos" => nota <= 2): aumentaria a ambiguidade e o risco de recortes nao pedidos; o filtro permanece explicito.
+
+**Compatibilidade:** sem filtro, a chamada ao recuperador e a saida sao identicas as versoes anteriores; o executor de casos da P1 nao foi alterado e os resultados de avaliacao continuam comparaveis.
+
+**Validacao:** testes em `tests/test_filtro_nota_p4.py` (montagem do `where`, faixa invalida, repasse ao ChromaDB, saida sem filtro inalterada) e execucoes reais documentadas em `docs/exemplos.md`.
+
+**Limitacoes:** a nota resume toda a experiencia do pedido; uma avaliacao com nota 1 pode tratar de entrega e nao do produto. O filtro restringe o recorte, mas nao garante pertinencia tematica.

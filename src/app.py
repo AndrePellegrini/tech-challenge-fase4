@@ -3,6 +3,7 @@
 
 Execucao por CLI:
     python -m src.app --pergunta "Quais relatos descrevem atraso na entrega?"
+    python -m src.app --pergunta "Quais problemas aparecem?" --nota-max 2
 
 Carrega o modelo de embeddings, o indice vetorial e o LLM uma unica vez
 por processo (nao recarrega a cada pergunta).
@@ -35,11 +36,21 @@ def _resposta_erro(mensagem: str) -> dict:
     }
 
 
-def processar_pergunta(pergunta: str, recuperador: Recuperador, gerador: GeradorQwenLocal) -> dict:
+def processar_pergunta(
+    pergunta: str,
+    recuperador: Recuperador,
+    gerador: GeradorQwenLocal,
+    nota_min: int | None = None,
+    nota_max: int | None = None,
+) -> dict:
     """Executa o fluxo completo para uma pergunta e devolve o contrato de saida.
 
     Erros operacionais (falha na recuperacao, timeout, excecao do modelo)
     sempre viram status erro_operacional, nunca evidencias_insuficientes.
+
+    nota_min/nota_max sao opcionais e restringem a recuperacao pela nota
+    da avaliacao (D027). Quando ambos sao None, o fluxo e identico ao
+    avaliado nos casos de desenvolvimento da P1.
     """
     # Passo 1 do fluxo do PDF de entrega P1: validar a entrada antes de
     # gastar tempo com embeddings, busca ou geracao.
@@ -70,8 +81,16 @@ def processar_pergunta(pergunta: str, recuperador: Recuperador, gerador: Gerador
             "context_ids": [],
         }
 
+    # Os filtros so sao repassados quando informados, preservando a
+    # chamada original buscar(pergunta, k=...) para o fluxo sem filtro.
+    filtros = {
+        chave: valor
+        for chave, valor in (("nota_min", nota_min), ("nota_max", nota_max))
+        if valor is not None
+    }
+
     try:
-        candidatos = recuperador.buscar(pergunta, k=config.TOP_K_CANDIDATOS)
+        candidatos = recuperador.buscar(pergunta, k=config.TOP_K_CANDIDATOS, **filtros)
     except Exception as erro:
         return _resposta_erro(f"Falha operacional na recuperacao: {erro}")
 
@@ -107,6 +126,25 @@ def processar_pergunta(pergunta: str, recuperador: Recuperador, gerador: Gerador
     # realmente vieram do contexto enviado, conforme exigido pelo PDF).
     resultado["retrieved_ids"] = [candidato.id for candidato in candidatos]
     resultado["context_ids"] = [evidencia.document_id for evidencia in evidencias]
+    if filtros:
+        # Registra no proprio resultado qual recorte de notas foi usado,
+        # para que a resposta nao seja lida como valida para toda a base.
+        resultado["filtros"] = filtros
+        # Metadados de cada evidencia enviada ao LLM: permitem conferir,
+        # na saida, que todas as fontes respeitam o filtro de nota.
+        resultado["evidencias_contexto"] = [
+            {
+                "marcador": evidencia.marcador,
+                "document_id": evidencia.document_id,
+                "review_score": evidencia.review_score,
+                "similaridade": (
+                    round(evidencia.similaridade, 4)
+                    if evidencia.similaridade is not None
+                    else None
+                ),
+            }
+            for evidencia in evidencias
+        ]
     return resultado
 
 
@@ -122,7 +160,21 @@ def main():
         description="Voice of Customer com RAG sobre avaliacoes da Olist"
     )
     parser.add_argument("--pergunta", required=True, help="Pergunta em portugues")
+    parser.add_argument(
+        "--nota-min", type=int, choices=range(1, 6), default=None,
+        help="Considerar apenas avaliacoes com nota >= este valor (1 a 5)",
+    )
+    parser.add_argument(
+        "--nota-max", type=int, choices=range(1, 6), default=None,
+        help="Considerar apenas avaliacoes com nota <= este valor (1 a 5)",
+    )
     argumentos = parser.parse_args()
+    if (
+        argumentos.nota_min is not None
+        and argumentos.nota_max is not None
+        and argumentos.nota_min > argumentos.nota_max
+    ):
+        parser.error("--nota-min nao pode ser maior que --nota-max")
 
     # Instanciados uma vez por execucao do processo: o modelo de
     # embeddings, a colecao do ChromaDB e o LLM so sao carregados de
@@ -132,7 +184,13 @@ def main():
     recuperador = Recuperador()
     gerador = GeradorQwenLocal()
 
-    resultado = processar_pergunta(argumentos.pergunta, recuperador, gerador)
+    resultado = processar_pergunta(
+        argumentos.pergunta,
+        recuperador,
+        gerador,
+        nota_min=argumentos.nota_min,
+        nota_max=argumentos.nota_max,
+    )
     print(json.dumps(resultado, ensure_ascii=False, indent=2))
 
 

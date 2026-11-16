@@ -13,6 +13,35 @@ from src import config
 from src.retrieval.tipos import Candidato
 
 
+def montar_filtro_nota(nota_min: int | None = None, nota_max: int | None = None) -> dict | None:
+    """Converte uma faixa de notas (1 a 5) no filtro `where` do ChromaDB.
+
+    Devolve None quando nenhum limite foi informado, para que a busca sem
+    filtro continue exatamente igual. Limites fora de 1..5 ou invertidos
+    geram ValueError, em vez de uma busca silenciosamente vazia.
+    """
+    for nome, valor in (("nota_min", nota_min), ("nota_max", nota_max)):
+        if valor is None:
+            continue
+        if isinstance(valor, bool) or not isinstance(valor, int) or not 1 <= valor <= 5:
+            raise ValueError(f"{nome} deve ser um inteiro entre 1 e 5")
+
+    if nota_min is not None and nota_max is not None and nota_min > nota_max:
+        raise ValueError("nota_min nao pode ser maior que nota_max")
+
+    condicoes = []
+    if nota_min is not None:
+        condicoes.append({"review_score": {"$gte": nota_min}})
+    if nota_max is not None:
+        condicoes.append({"review_score": {"$lte": nota_max}})
+
+    if not condicoes:
+        return None
+    if len(condicoes) == 1:
+        return condicoes[0]
+    return {"$and": condicoes}
+
+
 class Recuperador:
     """Carrega o modelo de embeddings e a colecao uma unica vez por processo."""
 
@@ -54,10 +83,23 @@ class Recuperador:
             )
         return self._colecao
 
-    def buscar(self, pergunta: str, k: int = config.TOP_K_CANDIDATOS) -> list[Candidato]:
-        """Retorna ate k candidatos ordenados por similaridade de cosseno."""
+    def buscar(
+        self,
+        pergunta: str,
+        k: int = config.TOP_K_CANDIDATOS,
+        nota_min: int | None = None,
+        nota_max: int | None = None,
+    ) -> list[Candidato]:
+        """Retorna ate k candidatos ordenados por similaridade de cosseno.
+
+        nota_min/nota_max (1 a 5, inclusivos) restringem a busca pelo
+        metadado review_score ja gravado no indice (D027). Sem filtro, a
+        consulta e identica a versao anterior.
+        """
         if not pergunta or not pergunta.strip():
             raise ValueError("Pergunta vazia")
+
+        filtro = montar_filtro_nota(nota_min, nota_max)
 
         # Prefixo "query:" e obrigatorio para o modelo E5 (D007): o
         # mesmo modelo usa "passage:" para os documentos indexados, e
@@ -68,11 +110,17 @@ class Recuperador:
             normalize_embeddings=True,
         )[0]
 
-        resultados = self.colecao.query(
-            query_embeddings=[vetor.tolist()],
-            n_results=k,
-            include=["documents", "metadatas", "distances"],
-        )
+        argumentos_consulta = {
+            "query_embeddings": [vetor.tolist()],
+            "n_results": k,
+            "include": ["documents", "metadatas", "distances"],
+        }
+        # O filtro e aplicado pelo proprio ChromaDB antes do ranking, de
+        # modo que o Top-K inteiro respeita a faixa de notas pedida.
+        if filtro is not None:
+            argumentos_consulta["where"] = filtro
+
+        resultados = self.colecao.query(**argumentos_consulta)
 
         # O ChromaDB devolve uma lista de listas (uma por consulta); aqui
         # so fazemos uma consulta por vez, entao sempre usamos o indice [0].

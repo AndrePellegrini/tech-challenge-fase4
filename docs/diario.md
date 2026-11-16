@@ -813,3 +813,40 @@ A mudanca e de rastreabilidade e nao altera a inferencia do modelo.
 **Decisao relacionada:** D026.
 
 **Proximos passos:** revisar arquivos modificados, executar testes finais, preparar commit e push da branch feature/p3-geracao e coordenar integracao com o grupo.
+
+## 15-16/11/2026 - P4: integracao, avaliacao integral e entrega
+
+**Integracao:**
+- Incorporado o pacote completo da P1 (branch de dados e avaliacao da P1): teste reservado, manifesto congelado, auditor, datasheet e relatorios. Conflitos apenas em `.gitignore` (uniao das regras) e `README.md`.
+- `scripts/auditar_avaliacao_p1.py`: hashes preservados, referencias exatas, nenhuma evidencia identica entre splits.
+
+**Reproducao em maquina limpa:**
+- CSV oficial conferido pelo SHA-256 registrado pela P1 (`012b61c7...`).
+- `explorar_avaliacoes.py` e `construir_base.py` regeneraram 42.687 documentos com SHA-256 identico ao do manifesto (`3519b8a9...`); relatorios de perfil identicos aos versionados.
+- Indice completo reconstruido (42.687 documentos) com `indexar_base_completa.py`.
+
+**Filtro por nota (desafio adicional):**
+- `nota_min`/`nota_max` em `Recuperador.buscar` e `processar_pergunta`; CLI `--nota-min`/`--nota-max`. Sem filtro, comportamento inalterado.
+- 11 testes em `tests/test_filtro_nota_p4.py`; suite completa com 95 testes aprovados.
+- Decisao relacionada: D027.
+
+**Avaliacao integral dos 18 casos de desenvolvimento:**
+- 18/18 status corretos e 0 erros estruturais pelo verificador da P1.
+- Revisao semantica: 11 fieis/corretos, 3 parciais (citacoes em excesso), 2 com erro pontual (R09, R15), 2 falhas (R18, R20).
+- 70 de 87 citacoes pertinentes nos casos respondiveis (80,5%).
+- Tempo mediano de ~117 s por pergunta em CPU.
+- Relatorio: `reports/avaliacao_p4_desenvolvimento.md`.
+
+**Exemplos:**
+- `scripts/gerar_exemplos.py` executa 11 perguntas baseadas no enunciado (incluindo filtro por nota, insuficiencia e fora do escopo) e salva `reports/exemplos_respostas.json`; apresentacao em `docs/exemplos.md`.
+
+**Documentacao:**
+- README, `docs/arquitetura.md` (v1.0.0), `docs/mapa_requisitos.md` e `data/eval/README.md` atualizados para o estado final.
+
+**Limitacoes mantidas:** recuperacao em R20, conclusao contraditoria em R18, citacoes em excesso, interpretacao de erro de digitacao em R15.
+
+**Conjunto reservado (execucao final unica):**
+- Configuracao congelada no commit `daa7bf4`; nenhum ajuste depois da execucao.
+- 9/12 status corretos, 0 erros estruturais, 47/53 citacoes pertinentes (88,7%).
+- Erros de status: R19 (recusa indevida), O03 e A03 (recusas seguras com `evidencias_insuficientes`). Em A03 a fonte inexistente nao foi citada.
+- Relatorio: `reports/avaliacao_p4_reservado.md`.
