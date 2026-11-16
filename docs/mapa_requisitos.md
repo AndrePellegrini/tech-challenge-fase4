@@ -14,9 +14,9 @@ Situação revisada em 16/11/2026 (entrega final).
 | R05 | Armazenamento e indexação | Concluído | ChromaDB persistente, 42.687 documentos; D008, D009 |
 | R06 | Transformação da pergunta | Concluído | Prefixo `query:` e normalização (`Recuperador.buscar`); remoção de comandos de sobrescrita (`extrair_tarefa_legitima`); D024 |
 | R07 | Recuperação semântica e seleção | Concluído | `src/retrieval/recuperador.py` (Top-50), `src/retrieval/contexto.py` (deduplicação, 8 textos / 4.000 caracteres); D014, D015 |
-| R08 | Construção do contexto e geração | Concluído | `construir_prompt` + Qwen2.5-1.5B local; D016, D026; 18 casos executados ponta a ponta |
-| R09 | Respostas com evidências rastreáveis | Concluído | Afirmações→marcadores→`document_id`/trecho literal; validação de citações; 0 erros estruturais em 18 casos |
-| R10 | Evidências insuficientes / fora do escopo | Concluído | `src/escopo.py`, status `evidencias_insuficientes`/`fora_do_escopo`; I01, I02, O01, O02 corretos; D023, D025 |
+| R08 | Construção do contexto e geração | Concluído | `construir_prompt` + Qwen2.5-1.5B local; D016, D026; 30 casos executados ponta a ponta (18 dev + 12 reservados) |
+| R09 | Respostas com evidências rastreáveis | Concluído | Afirmações→marcadores→`document_id`/trecho literal; validação de citações; 0 erros estruturais nos 30 casos |
+| R10 | Evidências insuficientes / fora do escopo | Concluído | `src/escopo.py`, status `evidencias_insuficientes`/`fora_do_escopo`; I01–I04 corretos; O01/O02 bloqueados; O03 recusado com status de insuficiência; D023, D025 |
 | R11 | Repositório público, README, instalação e reprodução | Concluído | `README.md`, `docs/`, reprodução validada em máquina limpa (hash idêntico da base) |
 | R12 | Vídeo de até 7 minutos | Em preparação | Etapa seguinte à entrega do repositório |
 | E01 | Desafio adicional: metadados | Concluído (nota) | Filtro `--nota-min`/`--nota-max` (D027); exemplos E06–E08 em `docs/exemplos.md` |
@@ -40,11 +40,11 @@ Situação revisada em 16/11/2026 (entrega final).
 
 | Critério | Como é atendido | Evidência |
 |---|---|---|
-| Recuperar conteúdos relevantes | E5 + ChromaDB, deduplicação, filtro por nota | 80,5% das citações pertinentes nos 12 casos respondíveis |
+| Recuperar conteúdos relevantes | E5 + ChromaDB, deduplicação, filtro por nota | 80,5% (dev) e 88,7% (reservado) das citações pertinentes |
 | Construir contexto adequado | Orçamento de 8 textos / 4.000 caracteres, evidências em JSON | `src/retrieval/contexto.py` |
-| Gerar respostas coerentes com as evidências | Prompt restrito ao contexto, até 3 afirmações | 11/18 fiéis, 3 parciais, 2 com erro pontual, 2 falhas |
+| Gerar respostas coerentes com as evidências | Prompt restrito ao contexto, até 3 afirmações | Dev: 11/18 fiéis · Reservado: 5/12 fiéis, 3 parciais |
 | Evitar informações não fundamentadas | Validação literal de trechos e IDs | 0 erros estruturais |
 | Rastreabilidade dos insights | Afirmação→marcador→documento→review/pedido | Contrato de saída em `docs/arquitetura.md` |
-| Reconhecer falta de informação | Regras de escopo + status de recusa | I01, I02, O01, O02 corretos |
+| Reconhecer falta de informação | Regras de escopo + status de recusa | 6/6 em dev; 2/2 insuficiências no reservado; 0 fontes inventadas nos 30 casos |
 
-Detalhes da avaliação: [`reports/avaliacao_p4_desenvolvimento.md`](../reports/avaliacao_p4_desenvolvimento.md).
+Detalhes da avaliação: [`reports/avaliacao_p4_desenvolvimento.md`](../reports/avaliacao_p4_desenvolvimento.md) (18 casos de desenvolvimento) e [`reports/avaliacao_p4_reservado.md`](../reports/avaliacao_p4_reservado.md) (12 casos reservados, execução única: 9/12 status corretos).

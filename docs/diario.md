@@ -843,4 +843,10 @@ A mudanca e de rastreabilidade e nao altera a inferencia do modelo.
 **Documentacao:**
 - README, `docs/arquitetura.md` (v1.0.0), `docs/mapa_requisitos.md` e `data/eval/README.md` atualizados para o estado final.
 
-**Limitacoes mantidas:** recuperacao em R20, conclusao contraditoria em R18, citacoes em excesso, interpretacao de erro de digitacao em R15. Conjunto reservado nao executado.
+**Limitacoes mantidas:** recuperacao em R20, conclusao contraditoria em R18, citacoes em excesso, interpretacao de erro de digitacao em R15.
+
+**Conjunto reservado (execucao final unica):**
+- Configuracao congelada no commit `daa7bf4`; nenhum ajuste depois da execucao.
+- 9/12 status corretos, 0 erros estruturais, 47/53 citacoes pertinentes (88,7%).
+- Erros de status: R19 (recusa indevida), O03 e A03 (recusas seguras com `evidencias_insuficientes`). Em A03 a fonte inexistente nao foi citada.
+- Relatorio: `reports/avaliacao_p4_reservado.md`.

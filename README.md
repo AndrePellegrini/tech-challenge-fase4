@@ -10,7 +10,7 @@ Solução de *Retrieval-Augmented Generation* (RAG) que transforma as avaliaçõ
 | **Embeddings** | `intfloat/multilingual-e5-small` (384 dim.) |
 | **Banco vetorial** | ChromaDB persistente, similaridade de cosseno |
 | **Gerador** | `Qwen/Qwen2.5-1.5B-Instruct`, local, em CPU, sem chave de API |
-| **Avaliação** | 18/18 casos de desenvolvimento com status correto, 0 erros estruturais, 80,5% das citações pertinentes |
+| **Avaliação** | Desenvolvimento: 18/18 status corretos · Teste reservado (perguntas nunca vistas): 9/12 · 0 fontes inventadas nos 30 casos |
 | **Testes** | 95 testes automatizados |
 
 ## Sumário
@@ -174,20 +174,25 @@ A análise de cada exemplo em [docs/exemplos.md](docs/exemplos.md) aponta també
 
 O benchmark da frente de dados tem 30 casos (20 respondíveis, 4 de insuficiência, 3 fora do escopo, 3 adversariais), divididos em 18 de desenvolvimento e 12 reservados, com hashes congelados ([evaluation/README.md](evaluation/README.md)).
 
-**Execução integral dos 18 casos de desenvolvimento** com a versão final:
+Os dois conjuntos foram executados integralmente com a versão final. O **desenvolvimento** orientou os ajustes; o **reservado** foi rodado **uma única vez**, com a configuração congelada, e mede o comportamento em perguntas que nunca influenciaram o sistema.
 
-| Indicador | Resultado |
-|---|---:|
-| Status igual ao gabarito | **18/18** |
-| Erros estruturais (fonte inventada, trecho não literal, fonte fora do contexto, sentinela de ataque) | **0** |
-| Revisão semântica: fiéis ou corretos | 11/18 |
-| Parciais (síntese correta, citações em excesso) | 3/18 |
-| Erro pontual de síntese | 2/18 |
-| Falha semântica | 2/18 |
-| Citações pertinentes nos casos respondíveis | 70/87 (80,5%) |
-| Tempo mediano por pergunta (CPU) | ≈ 117 s |
+| Indicador | Desenvolvimento (18) | Reservado (12) |
+|---|---:|---:|
+| Status igual ao gabarito | **18/18** | **9/12** |
+| Erros estruturais (fonte inventada, trecho não literal, fonte fora do contexto, sentinela de ataque) | **0** | **0** |
+| Revisão: fiéis ou corretos | 11 | 5 |
+| Revisão: parciais (síntese correta, citação lateral ou em excesso) | 3 | 3 |
+| Revisão: erro pontual de síntese | 2 | 1 |
+| Revisão: falha | 2 | 1 |
+| Revisão: recusa segura com status diferente | — | 2 |
+| Citações pertinentes nos casos respondíveis | 70/87 (80,5%) | 47/53 (88,7%) |
+| Tempo mediano por pergunta (CPU) | ≈ 117 s | ≈ 111 s |
 
-O verificador automático confere status e estrutura. A pertinência de cada citação foi revisada caso a caso, porque **status correto não garante fidelidade**: R18 e R20 passam no verificador, mas falham na revisão. Os 12 casos reservados não foram usados para ajustes nem executados. Relatório completo: [reports/avaliacao_p4_desenvolvimento.md](reports/avaliacao_p4_desenvolvimento.md).
+- **O que se manteve em perguntas novas:** nenhuma fonte inventada (inclusive no ataque A03, que exigia citar uma avaliação inexistente), recusas corretas sem evidência e boa pertinência das citações.
+- **O que caiu:** a escolha do status em casos de fronteira. O modelo prefere `evidencias_insuficientes` quando hesita; em O03 e A03 isso é seguro (nada foi inventado), em R19 é uma recusa indevida.
+- **Status correto não garante fidelidade:** por isso a pertinência de cada citação foi revisada caso a caso (R18 e R20 passam no verificador e falham na revisão).
+
+Relatórios: [desenvolvimento](reports/avaliacao_p4_desenvolvimento.md) · [reservado](reports/avaliacao_p4_reservado.md).
 
 ## 9. Como executar
 
@@ -289,7 +294,8 @@ Registro completo, com alternativas e limitações de cada decisão: [docs/decis
 - **Citações em excesso:** o modelo de 1,5B tende a citar todo o contexto; 80,5% das citações são pertinentes.
 - **Polaridade e negação:** elogios e críticas do mesmo tema podem se misturar (R09); em R18 a conclusão contradiz as fontes.
 - **Ruído do texto original:** erros de digitação são preservados e podem ser mal interpretados (R15: "calor do frete").
-- **Escopo:** as regras cobrem padrões específicos; as demais perguntas externas dependem do modelo.
+- **Escopo:** as regras cobrem padrões específicos; as demais perguntas externas dependem do modelo, que tende a recusar com `evidencias_insuficientes` em vez de `fora_do_escopo` (O03, E11).
+- **Generalização:** em perguntas novas (conjunto reservado), o acerto de status cai de 18/18 para 9/12, principalmente em casos de fronteira entre responder e recusar.
 - **Desempenho:** cerca de 2 minutos por pergunta em CPU.
 
 ## 13. Estrutura do repositório
@@ -321,6 +327,7 @@ tech-challenge-fase4/
 | [docs/decisoes.md](docs/decisoes.md) | 27 decisões técnicas com justificativas e alternativas |
 | [docs/exemplos.md](docs/exemplos.md) | Perguntas e respostas reais com evidências |
 | [reports/avaliacao_p4_desenvolvimento.md](reports/avaliacao_p4_desenvolvimento.md) | Avaliação dos 18 casos de desenvolvimento |
+| [reports/avaliacao_p4_reservado.md](reports/avaliacao_p4_reservado.md) | Avaliação final dos 12 casos reservados |
 | [docs/mapa_requisitos.md](docs/mapa_requisitos.md) | Cada requisito do enunciado e onde é atendido |
 | [docs/diario.md](docs/diario.md) | Histórico de experimentos |
 | [docs/entrega_p1_indice.md](docs/entrega_p1_indice.md) | Pacote de dados e avaliação |

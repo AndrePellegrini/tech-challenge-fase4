@@ -3,7 +3,7 @@
 **Data da execução:** 15/11/2026
 **Configuração:** `v3-adaptativo-p311` · E5-small · ChromaDB `olist_e5_full_42687_v1` (42.687 documentos) · Top-50 → até 8 evidências / 4.000 caracteres · Qwen2.5-1.5B-Instruct local (CPU, `do_sample=False`, 600 tokens)
 **Execução:** `python -m src.evaluation.executar_casos` com os 18 IDs de `evaluation/desenvolvimento/perguntas.jsonl`; conferência com `scripts/revisar_resultados_rag.py --origem modelo_real`.
-**Conjunto reservado (12 casos):** não executado nesta etapa (ver seção 5).
+**Conjunto reservado (12 casos):** executado depois, uma única vez, com a mesma configuração congelada: ver [avaliacao_p4_reservado.md](avaliacao_p4_reservado.md).
 
 Esta é a **primeira execução integral dos 18 casos de desenvolvimento** com a versão final do pipeline, ponta a ponta, sobre o índice completo. Ela substitui a baseline parcial de 14 casos (8/14) e a projeção de 12/14 registradas na P3.
 
@@ -81,7 +81,7 @@ Critérios da rubrica em `evaluation/README.md`: pertinência de cada fonte cita
 
 ## 5. Conjunto reservado
 
-Os 12 casos de `evaluation/teste_reservado/` não foram executados. O executor bloqueia esse caminho por padrão para impedir ajustes guiados pelo teste. Rodar o reservado exige congelar a configuração e registrar o resultado uma única vez, sem nova rodada de ajustes; essa execução fica a critério do grupo.
+Os 12 casos de `evaluation/teste_reservado/` não foram usados durante os ajustes. Depois desta avaliação, a configuração foi congelada (commit `daa7bf4`) e o conjunto foi executado uma única vez, sem ajustes posteriores: **9/12 status corretos, 0 erros estruturais, 47/53 citações pertinentes**. Detalhes em [avaliacao_p4_reservado.md](avaliacao_p4_reservado.md).
 
 ## 6. Reprodução
 
